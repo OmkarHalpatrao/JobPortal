@@ -5,15 +5,26 @@ const cookieParser = require("cookie-parser")
 require("dotenv").config()
 
 const app = express()
+const allowedOrigins = [
+  process.env.CLIENT_URL,               
+  "http://localhost:5173",              
+]
 
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      } else {
+        return callback(new Error("Not allowed by CORS"))
+      }
+    },
     credentials: true,
-  }),
+  })
 )
 
 // Import routes
