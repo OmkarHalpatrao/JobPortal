@@ -10,8 +10,8 @@ const { auth, isJobSeeker, isRecruiter } = require("../middleware/auth")
 const { resumeUpload } = require("../config/cloudinary")
 
 // Routes
-router.post("/job/:jobId/apply", auth, isJobSeeker, resumeUpload.single("resume"), applyForJob)
-router.get("/job/:jobId/applications", auth, isRecruiter, getJobApplications)
+router.post("/apply/:jobId", auth, isJobSeeker, resumeUpload.single("resume"), applyForJob)
+router.get("/applicants/:jobId", auth, isRecruiter, getJobApplications)
 router.put("/:applicationId", auth, isRecruiter, updateApplicationStatus)
 router.get("/user", auth, isJobSeeker, getUserApplications)
 

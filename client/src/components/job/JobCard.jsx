@@ -3,7 +3,7 @@
 import { Link } from "react-router-dom"
 import { formatDistance } from "date-fns"
 import { useAuth } from "../../context/AuthContext"
-import { BookmarkIcon } from "./icons"
+import { BookmarkIcon } from "./Icons"
 import { useSavedJobs } from "../../hooks/useSavedJobs"
 
 function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {

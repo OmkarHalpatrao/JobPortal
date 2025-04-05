@@ -6,7 +6,7 @@ import axios from "axios"
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { useAuth } from "../../context/AuthContext"
-import { BookmarkIcon } from "./icons"
+import { BookmarkIcon } from "./Icons"
 
 function JobDetail() {
   const { jobId } = useParams()
@@ -93,7 +93,7 @@ function JobDetail() {
       formData.append("resume", resumeFile)
       formData.append("coverLetter", coverLetter)
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/applications/job/${jobId}`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/applications/apply/${jobId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
