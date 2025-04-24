@@ -1,8 +1,8 @@
-"use client"
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthProvider, useAuth } from "./context/AuthContext"
+import RenderOptimizer from "./components/common/RandomOptimizer"
+import PublicRoute from "./components/auth/PublicRoute"
 
 // Layouts
 import MainLayout from "./layouts/MainLayout"
@@ -25,8 +25,10 @@ import JobSeekerDashboardPage from "./pages/dashboard/JobSeekerDashboardPage"
 import RecruiterDashboardPage from "./pages/dashboard/RecruiterDashboardPage"
 import ApplicationsPage from "./pages/dashboard/ApplicationsPage"
 
-// Profile page
+// Profile pages
 import ProfilePage from "./pages/profile/ProfilePage"
+import CompanyProfilePage from "./pages/company/CompanyProfilePage"
+import ApplicantProfilePage from "./pages/applicant/ApplicantProfilePage"
 
 // Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -55,16 +57,46 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <RenderOptimizer />
         <Toaster position="top-right" />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<MainLayout />}>
-            <Route index element={<HomePage />} />
+            <Route
+              index
+              element={
+                <PublicRoute>
+                  <HomePage />
+                </PublicRoute>
+              }
+            />
             <Route path="jobs" element={<JobsPage />} />
             <Route path="jobs/:jobId" element={<JobDetailPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<SignupPage />} />
-            <Route path="verify-email" element={<VerifyEmailPage />} />
+            <Route
+              path="login"
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="signup"
+              element={
+                <PublicRoute>
+                  <SignupPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="verify-email"
+              element={
+                <PublicRoute>
+                  <VerifyEmailPage />
+                </PublicRoute>
+              }
+            />
+            <Route path="company/:companyId" element={<CompanyProfilePage />} />
             <Route
               path="profile"
               element={
@@ -116,6 +148,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="applicantProfile/:applicantId"
+              element={
+                <ProtectedRoute allowedRoles={["Recruiter"]}>
+                  <ApplicantProfilePage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route
@@ -138,4 +178,3 @@ function App() {
 }
 
 export default App
-

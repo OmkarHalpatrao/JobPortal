@@ -32,6 +32,7 @@ const authRoutes = require("./routes/auth")
 const jobRoutes = require("./routes/job")
 const applicationRoutes = require("./routes/application")
 const profileRoutes = require("./routes/profile")
+const pingRoutes = require("./routes/ping")
 
 // Mount routes
 app.use("/api/v1/auth", authRoutes)

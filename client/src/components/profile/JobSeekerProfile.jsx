@@ -1,9 +1,9 @@
-"use client"
-
 import { useState, useRef } from "react"
 import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
+import { FaGithub, FaLinkedin, FaGlobe } from "react-icons/fa" 
+
 
 function JobSeekerProfile({ user, profileData }) {
   const { token, updateUser } = useAuth()
@@ -133,81 +133,85 @@ function JobSeekerProfile({ user, profileData }) {
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="md:w-1/3">
-            <div className="flex flex-col items-center">
-              <div
-                className="w-32 h-32 rounded-full overflow-hidden mb-4 relative group cursor-pointer"
-                onClick={handlePhotoClick}
-              >
-                {photoLoading ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-200 bg-opacity-75">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                  </div>
-                ) : (
-                  <>
-                    <img
-                      src={profilePhoto || "https://via.placeholder.com/150"}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-white text-sm font-medium">Change Photo</span>
-                    </div>
-                  </>
-                )}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                />
+
+
+
+<div className="p-6">
+  <div className="flex flex-col md:flex-row gap-6">
+    <div className="md:w-1/3">
+      <div className="flex flex-col items-center">
+        <div
+          className="w-32 h-32 rounded-full overflow-hidden mb-4 relative group cursor-pointer"
+          onClick={handlePhotoClick}
+        >
+          {photoLoading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-200 bg-opacity-75">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <>
+              <img
+                src={profilePhoto || "https://via.placeholder.com/150"}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-white text-sm font-medium">Change Photo</span>
               </div>
-              <h2 className="text-xl font-semibold">
-                {user.firstName} {user.lastName}
-              </h2>
-              <p className="text-gray-600">{user.email}</p>
-              {!isEditing && (
-                <>
-                  <p className="mt-2 text-gray-600">{formData.location}</p>
-                  <div className="mt-4 flex gap-2">
-                    {formData.linkedin && (
-                      <a
-                        href={formData.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        LinkedIn
-                      </a>
-                    )}
-                    {formData.github && (
-                      <a
-                        href={formData.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-800 hover:text-black"
-                      >
-                        GitHub
-                      </a>
-                    )}
-                    {formData.portfolio && (
-                      <a
-                        href={formData.portfolio}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        Portfolio
-                      </a>
-                    )}
-                  </div>
-                </>
+            </>
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handlePhotoChange}
+          />
+        </div>
+        <h2 className="text-xl font-semibold">
+          {user.firstName} {user.lastName}
+        </h2>
+        <p className="text-gray-600">{user.email}</p>
+        {!isEditing && (
+          <>
+            <p className="mt-2 text-gray-600">{formData.location}</p>
+            <div className="mt-4 flex gap-4 text-sm items-center">
+              {formData.linkedin && (
+                <a
+                  href={formData.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                >
+                  <FaLinkedin /> LinkedIn
+                </a>
+              )}
+              {formData.github && (
+                <a
+                  href={formData.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-gray-800 hover:text-black"
+                >
+                  <FaGithub /> GitHub
+                </a>
+              )}
+              {formData.portfolio && (
+                <a
+                  href={formData.portfolio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-green-600 hover:text-green-800"
+                >
+                  <FaGlobe /> Portfolio
+                </a>
               )}
             </div>
-          </div>
+          </>
+        )}
+      </div>
+    </div>
+
 
           <div className="md:w-2/3">
             {isEditing ? (

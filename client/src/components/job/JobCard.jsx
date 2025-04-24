@@ -5,6 +5,7 @@ import { formatDistance } from "date-fns"
 import { useAuth } from "../../context/AuthContext"
 import { BookmarkIcon } from "./Icons"
 import { useSavedJobs } from "../../hooks/useSavedJobs"
+import { toast } from "react-hot-toast"
 
 function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
   const { isAuthenticated, user } = useAuth()
@@ -23,6 +24,13 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
 
     const newSavedState = toggleSaveJob(job)
 
+    // Show a toast message when the job is saved or unsaved
+    if (newSavedState) {
+      toast.success("Job saved successfully!")
+    } else {
+      toast.info("Job unsaved.")
+    }
+
     // If a callback was provided, call it
     if (onUnsave && !newSavedState) {
       onUnsave(job._id)
@@ -35,7 +43,22 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-      <div className="p-6">
+      <div className="relative p-6">
+        <div className="absolute top-2 right-2">
+          {isAuthenticated && user.accountType === "JobSeeker" && (
+            <button
+              onClick={handleToggleSaveJob}
+              className={`p-1 rounded-full focus:outline-none ${
+                isSaved
+                  ? "text-yellow-500" // Yellow color when saved
+                  : "text-gray-400 hover:text-gray-500"
+              } transition-colors duration-200`} // Apply transition for smooth color change
+              title={isSaved ? "Unsave Job" : "Save Job"}
+            >
+              <BookmarkIcon filled={isSaved} />
+            </button>
+          )}
+        </div>
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
             <img
@@ -66,7 +89,7 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
               </div>
             </div>
 
-            <div className="text-gray-600 mb-4">
+            <div className="text-gray-900 mb-4">
               <div className="flex items-center mb-1">
                 <svg
                   className="w-4 h-4 mr-1"
@@ -82,7 +105,9 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                   ></path>
                 </svg>
-                <span>{job.company}</span>
+                <span>
+                  <strong>{job.company}</strong>
+                </span>
               </div>
 
               <div className="flex items-center mb-1">
@@ -130,43 +155,15 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
               )}
             </div>
 
-            <div className="mb-4">
-              <p className="text-gray-600 line-clamp-2">{job.description}</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              {job.skills.slice(0, 3).map((skill, index) => (
-                <span key={index} className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                  {skill}
-                </span>
-              ))}
-              {job.skills.length > 3 && (
-                <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                  +{job.skills.length - 3} more
-                </span>
-              )}
-            </div>
-
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-500">
                 Posted {formatDistance(new Date(job.postedDate), new Date(), { addSuffix: true })}
               </span>
 
               <div className="flex items-center gap-2">
-                {isAuthenticated && user.accountType === "JobSeeker" && (
-                  <button
-                    onClick={handleToggleSaveJob}
-                    className={`p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isSaved ? "text-yellow-500 hover:text-yellow-600" : "text-gray-400 hover:text-gray-500"
-                    }`}
-                    title={isSaved ? "Unsave Job" : "Save Job"}
-                  >
-                    <BookmarkIcon filled={isSaved} />
-                  </button>
-                )}
                 <Link
                   to={`/jobs/${job._id}`}
-                  className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   View Details
                 </Link>
@@ -180,4 +177,3 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, onUnsave }) {
 }
 
 export default JobCard
-

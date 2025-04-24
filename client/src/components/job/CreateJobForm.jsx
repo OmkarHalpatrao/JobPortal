@@ -5,6 +5,14 @@ import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
+import { Editor } from "react-draft-wysiwyg"
+import { EditorState } from "draft-js"
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+
+function getPlainText(editorState) {
+  const content = editorState.getCurrentContent()
+  return content.getPlainText().trim()
+}
 
 function CreateJobForm() {
   const { token, user } = useAuth()
@@ -16,42 +24,31 @@ function CreateJobForm() {
     jobType: "Full-time",
     salary: "",
     description: "",
-    requirements: "",
-    responsibilities: "",
     skills: "",
     deadline: "",
   })
 
+  const [requirementsState, setRequirementsState] = useState(EditorState.createEmpty())
+  const [responsibilitiesState, setResponsibilitiesState] = useState(EditorState.createEmpty())
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
+    setFormData({ ...formData, [name]: value })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Convert comma-separated strings to arrays
+    const requirementsText = getPlainText(requirementsState)
+    const responsibilitiesText = getPlainText(responsibilitiesState)
+
     const jobData = {
       ...formData,
-      // Use company name from user profile
       company: user.companyName,
-      requirements: formData.requirements
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item),
-      responsibilities: formData.responsibilities
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item),
-      skills: formData.skills
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item),
+      requirements: requirementsText,
+      responsibilities: responsibilitiesText,
+      skills: formData.skills.split(",").map((item) => item.trim()).filter((item) => item),
     }
 
     setLoading(true)
@@ -79,181 +76,136 @@ function CreateJobForm() {
         <h2 className="text-xl font-bold text-white">Post a New Job</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6">
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Job Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Job Title</label>
             <input
               type="text"
-              id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
             />
           </div>
 
           <div>
-            <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-              Company
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Company</label>
             <input
               type="text"
-              id="company"
               value={user.companyName}
               disabled
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 bg-gray-100 text-gray-500"
             />
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-              Location
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Location</label>
             <input
               type="text"
-              id="location"
               name="location"
               value={formData.location}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
             />
           </div>
 
           <div>
-            <label htmlFor="jobType" className="block text-sm font-medium text-gray-700">
-              Job Type
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Job Type</label>
             <select
-              id="jobType"
               name="jobType"
               value={formData.jobType}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
             >
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
-              <option value="Contract">Contract</option>
               <option value="Internship">Internship</option>
+              <option value="Contract">Contract</option>
               <option value="Remote">Remote</option>
             </select>
           </div>
 
           <div>
-            <label htmlFor="salary" className="block text-sm font-medium text-gray-700">
-              Salary (Optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Salary</label>
             <input
               type="text"
-              id="salary"
               name="salary"
               value={formData.salary}
               onChange={handleChange}
-              placeholder="e.g. $50,000 - $70,000"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
             />
           </div>
 
           <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
-              Application Deadline (Optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Deadline</label>
             <input
               type="date"
-              id="deadline"
               name="deadline"
               value={formData.deadline}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
             />
           </div>
         </div>
 
-        <div className="mt-6">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Job Description
-          </label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
-            id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            rows={4}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          ></textarea>
+            rows={4}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
+          />
         </div>
 
-        <div className="mt-6">
-          <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
-            Requirements (Comma separated)
-          </label>
-          <textarea
-            id="requirements"
-            name="requirements"
-            value={formData.requirements}
-            onChange={handleChange}
-            rows={3}
-            placeholder="Bachelor's degree in Computer Science, 3+ years of experience, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          ></textarea>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Requirements</label>
+          <Editor
+            editorState={requirementsState}
+            onEditorStateChange={setRequirementsState}
+            wrapperClassName="border rounded"
+            editorClassName="p-2 min-h-[150px]"
+          />
         </div>
 
-        <div className="mt-6">
-          <label htmlFor="responsibilities" className="block text-sm font-medium text-gray-700">
-            Responsibilities (Comma separated)
-          </label>
-          <textarea
-            id="responsibilities"
-            name="responsibilities"
-            value={formData.responsibilities}
-            onChange={handleChange}
-            rows={3}
-            placeholder="Develop and maintain web applications, Collaborate with team members, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          ></textarea>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Responsibilities</label>
+          <Editor
+            editorState={responsibilitiesState}
+            onEditorStateChange={setResponsibilitiesState}
+            wrapperClassName="border rounded"
+            editorClassName="p-2 min-h-[150px]"
+          />
         </div>
 
-        <div className="mt-6">
-          <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
-            Required Skills (Comma separated)
-          </label>
-          <textarea
-            id="skills"
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Skills (comma separated)</label>
+          <input
+            type="text"
             name="skills"
             value={formData.skills}
             onChange={handleChange}
-            rows={2}
-            placeholder="JavaScript, React, Node.js, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          ></textarea>
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
+          />
         </div>
 
-        <div className="mt-8 flex justify-end">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard/recruiter")}
-            className="mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {loading ? "Posting..." : "Post Job"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm disabled:opacity-50"
+        >
+          {loading ? "Creating..." : "Create Job"}
+        </button>
       </form>
     </div>
   )
 }
 
 export default CreateJobForm
-
