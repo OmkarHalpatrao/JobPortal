@@ -1,23 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import rollupNodePolyFill from 'rollup-plugin-polyfill-node'
 
 export default defineConfig({
   plugins: [
-    react(),
-    tailwindcss(),
-    rollupNodePolyFill() // Add this to polyfill global, setImmediate, etc.
+    react({
+      jsxRuntime: 'automatic' // ⬅️ Ensure it's using new JSX transform
+    })
   ],
   resolve: {
     alias: {
-      global: 'globalthis', // Alias for global
+      global: 'globalThis'
     }
   },
   define: {
-    global: 'globalThis', // Define it for use in packages like fbjs
+    global: 'globalThis'
   },
   optimizeDeps: {
-    include: ['buffer', 'process'] // Optional for future needs
+    include: ['buffer', 'process']
   }
 })

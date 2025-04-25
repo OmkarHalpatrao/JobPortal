@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "jsx": "react-jsx",         // Enables automatic JSX transform
+      "module": "ESNext",
+      "target": "ESNext",
+      "moduleResolution": "Node"
+    },
+    "include": ["src"]
+  }
+  
