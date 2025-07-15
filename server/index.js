@@ -2,17 +2,40 @@ const express = require("express")
 const mongoose = require("mongoose")
 const cors = require("cors")
 const cookieParser = require("cookie-parser")
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json");
+// const redis = require("redis");
+// const client = redis.createClient();
+
+// client.connect();
+
+
+
+
 require("dotenv").config()
 
 const app = express()
 const allowedOrigins = [
   process.env.CLIENT_URL,               
-  "http://localhost:5173",              
+  "http://localhost:5173",
+  "http://localhost:4000",               
 ]
 
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
+
+// Swagger docs route
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      withCredentials: true,
+    },
+  })
+);
+
 
 app.use(
   cors({
@@ -49,10 +72,14 @@ mongoose
   })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("MongoDB connection error:", err))
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
 
 // Start server
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
+  // console.log(`API Docs available at http://localhost:${PORT}/api-docs`);
 })
 

@@ -13,7 +13,6 @@ export const useUserApplications = () => {
     queryKey: ["userApplications"],
     queryFn: getUserApplications,
     onError: (error) => {
-      console.error("Error fetching user applications:", error)
       toast.error("Failed to fetch your applications. Please try again later.")
     },
   })
@@ -26,7 +25,6 @@ export const useJobApplications = (jobId) => {
     queryFn: () => getJobApplications(jobId),
     enabled: !!jobId,
     onError: (error) => {
-      console.error(`Error fetching applications for job ${jobId}:`, error)
       toast.error("Failed to fetch applications. Please try again later.")
     },
   })
@@ -43,7 +41,6 @@ export const useApplyForJob = () => {
       toast.success("Application submitted successfully")
     },
     onError: (error) => {
-      console.error("Error applying for job:", error)
       toast.error(error.response?.data?.message || "Failed to submit application")
     },
   })
@@ -60,7 +57,6 @@ export const useUpdateApplicationStatus = () => {
       toast.success(`Application status updated to ${variables.status}`)
     },
     onError: (error) => {
-      console.error("Error updating application status:", error)
       toast.error(error.response?.data?.message || "Failed to update application status")
     },
   })

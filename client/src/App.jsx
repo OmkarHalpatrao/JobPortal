@@ -19,6 +19,7 @@ import JobsPage from "./pages/job/JobsPage"
 import JobDetailPage from "./pages/job/JobDetailPage"
 import CreateJobPage from "./pages/job/CreateJobPage"
 import SavedJobsPage from "./pages/job/SavedJobsPage"
+import EditJobPage from "./pages/job/EditJobPage"
 
 // Dashboard pages
 import JobSeekerDashboardPage from "./pages/dashboard/JobSeekerDashboardPage"
@@ -164,6 +165,16 @@ function App() {
               <ProtectedRoute allowedRoles={["Recruiter"]}>
                 <MainLayout>
                   <CreateJobPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/jobs/edit/:jobId"
+            element={
+              <ProtectedRoute allowedRoles={["Recruiter"]}>
+                <MainLayout>
+                  <EditJobPage />
                 </MainLayout>
               </ProtectedRoute>
             }

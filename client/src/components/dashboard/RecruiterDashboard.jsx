@@ -70,102 +70,53 @@ function RecruiterDashboard() {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <div key={job._id} className="bg-gray-50 rounded-lg shadow p-4 flex flex-col justify-between h-full">
+                <div>
+                  <Link to={`/jobs/${job._id}`} className="text-lg font-bold text-blue-700 hover:underline block mb-1 truncate">
+                    {job.title}
+                  </Link>
+                  <div className="text-sm text-gray-500 mb-2">{job.location}</div>
+                  <div className="text-xs text-gray-400 mb-2">Posted: {format(new Date(job.postedDate), "MMM dd, yyyy")}</div>
+                  {job.deadline && (
+                    <div className="text-xs text-gray-400 mb-2">Deadline: {format(new Date(job.deadline), "MMM dd, yyyy")}</div>
+                  )}
+                  <div className="text-sm text-gray-700 mb-2">{job.applications.length} applications</div>
+                  <span
+                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full mb-2 ${
+                      job.isClosed ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                    }`}
                   >
-                    Job Title
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Posted Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    {job.isClosed ? "Closed" : "Active"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Link
+                    to={`/dashboard/applications?jobId=${job._id}`}
+                    className="px-3 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
                   >
                     Applications
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  </Link>
+                  {!job.isClosed && (
+                    <button
+                      onClick={() => handleCloseJob(job._id)}
+                      disabled={closeJobMutation.isPending}
+                      className="px-3 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                    >
+                      Close
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteJob(job._id)}
+                    disabled={deleteJobMutation.isPending}
+                    className="px-3 py-1 text-xs font-medium rounded bg-red-100 text-red-700 hover:bg-red-200"
                   >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {jobs.map((job) => (
-                  <tr key={job._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                      <div className="text-sm text-gray-500">{job.location}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{format(new Date(job.postedDate), "MMM dd, yyyy")}</div>
-                      {job.deadline && (
-                        <div className="text-sm text-gray-500">
-                          Deadline: {format(new Date(job.deadline), "MMM dd, yyyy")}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{job.applications.length} applications</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          job.isClosed ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {job.isClosed ? "Closed" : "Active"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <Link to={`/jobs/${job._id}`} className="text-indigo-600 hover:text-indigo-900">
-                          View
-                        </Link>
-                        <Link
-                          to={`/dashboard/applications?jobId=${job._id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Applications
-                        </Link>
-                        {!job.isClosed && (
-                          <button
-                            onClick={() => handleCloseJob(job._id)}
-                            disabled={closeJobMutation.isPending}
-                            className="text-yellow-600 hover:text-yellow-900"
-                          >
-                            Close
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeleteJob(job._id)}
-                          disabled={deleteJobMutation.isPending}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

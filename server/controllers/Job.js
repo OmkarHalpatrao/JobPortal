@@ -41,7 +41,6 @@ exports.createJob = async (req, res) => {
       job,
     })
   } catch (error) {
-    console.error("Error in createJob:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to create job",
@@ -52,12 +51,10 @@ exports.createJob = async (req, res) => {
 
 // Get all jobs
 exports.getAllJobs = async (req, res) => {
+  console.log("[Job] getAllJobs called")
   try {
-    console.log("Executing getAllJobs controller function")
-
     // Check if there are any jobs in the database
     const jobCount = await Job.countDocuments()
-    console.log(`Total jobs in database: ${jobCount}`)
 
     // Get all active and non-closed jobs
     const jobs = await Job.find({ isActive: true, isClosed: false }).populate(
@@ -65,15 +62,11 @@ exports.getAllJobs = async (req, res) => {
       "firstName lastName companyName companyLogo email contactNumber",
     )
 
-    console.log(`Found ${jobs.length} active jobs`)
-
     // If no jobs are found, check if there are any jobs at all
     if (jobs.length === 0) {
       const allJobs = await Job.find()
-      console.log(`Found ${allJobs.length} total jobs (including inactive/closed)`)
 
       if (allJobs.length > 0) {
-        console.log("Jobs exist but all are either inactive or closed")
       }
     }
 
@@ -82,7 +75,7 @@ exports.getAllJobs = async (req, res) => {
       jobs,
     })
   } catch (error) {
-    console.error("Error in getAllJobs:", error)
+    console.error("[Job] Error in getAllJobs:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to fetch jobs",
@@ -93,6 +86,7 @@ exports.getAllJobs = async (req, res) => {
 
 // Get job by ID
 exports.getJobById = async (req, res) => {
+  console.log("[Job] getJobById called", { jobId: req.params.jobId })
   try {
     const { jobId } = req.params
 
@@ -118,7 +112,7 @@ exports.getJobById = async (req, res) => {
       job,
     })
   } catch (error) {
-    console.error("Error in getJobById:", error)
+    console.error("[Job] Error in getJobById:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to fetch job",
@@ -163,7 +157,6 @@ exports.updateJob = async (req, res) => {
       job: updatedJob,
     })
   } catch (error) {
-    console.error("Error in updateJob:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to update job",
@@ -205,7 +198,6 @@ exports.closeJob = async (req, res) => {
       message: "Job closed successfully",
     })
   } catch (error) {
-    console.error("Error in closeJob:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to close job",
@@ -249,7 +241,6 @@ exports.deleteJob = async (req, res) => {
       message: "Job deleted successfully",
     })
   } catch (error) {
-    console.error("Error in deleteJob:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to delete job",
@@ -276,7 +267,6 @@ exports.getRecruiterJobs = async (req, res) => {
       jobs,
     })
   } catch (error) {
-    console.error("Error in getRecruiterJobs:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to fetch recruiter jobs",
@@ -285,3 +275,23 @@ exports.getRecruiterJobs = async (req, res) => {
   }
 }
 
+// ✅ Get jobs by recruiter ID (public access)
+exports.getJobsByRecruiterId = async (req, res) => {
+  try {
+    const recruiterId = req.params.recruiterId
+
+    const jobs = await Job.find({ recruiter: recruiterId, isActive: true })
+      .sort({ postedDate: -1 }) // Optional: latest first
+
+    return res.status(200).json({
+      success: true,
+      jobs,
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch jobs for this company",
+      error: error.message,
+    })
+  }
+}

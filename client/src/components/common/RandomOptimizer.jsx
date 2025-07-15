@@ -4,8 +4,8 @@ const RenderOptimizer = () => {
   useEffect(() => {
     const keepWarm = () => {
       fetch(`${import.meta.env.VITE_API_URL}/ping`)
-        .then(() => console.log("✅ Server pinged successfully"))
-        .catch(() => console.log("⚠️ Ping failed — likely because the server is asleep"))
+        .then(() => {/* removed log */})
+        .catch(() => {/* removed log */})
     }
 
     // Initial ping

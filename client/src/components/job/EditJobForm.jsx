@@ -1,16 +1,20 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+"use client"
+
+import { useState, useEffect } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import { HiArrowNarrowLeft } from "react-icons/hi"
 
-function CreateJobForm() {
+function EditJobForm() {
+  const { jobId } = useParams()
   const { token, user } = useAuth()
   const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     title: "",
+    company: "",
     location: "",
     jobType: "Full-time",
     salary: "",
@@ -22,6 +26,55 @@ function CreateJobForm() {
   })
 
   const [loading, setLoading] = useState(false)
+  const [fetchLoading, setFetchLoading] = useState(true)
+
+  // Fetch job details
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        setFetchLoading(true)
+        console.log(`Fetching job details for job ID: ${jobId}`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        const job = response.data.job
+        console.log("Fetched job details:", job)
+        console.log("Current user:", user)
+        // Handle recruiter as object or string
+        const recruiterId = typeof job.recruiter === 'object' ? job.recruiter._id : job.recruiter
+        if (recruiterId !== user._id) {
+          toast.error("You are not authorized to edit this job")
+          navigate("/dashboard/recruiter")
+          return
+        }
+
+        // Format requirements, responsibilities, and skills arrays back to comma-separated strings
+        setFormData({
+          title: job.title || "",
+          company: job.company || "",
+          location: job.location || "",
+          jobType: job.jobType || "Full-time",
+          salary: job.salary || "",
+          description: job.description || "",
+          requirements: job.requirements ? job.requirements.join(", ") : "",
+          responsibilities: job.responsibilities ? job.responsibilities.join(", ") : "",
+          skills: job.skills ? job.skills.join(", ") : "",
+          deadline: job.deadline ? new Date(job.deadline).toISOString().split("T")[0] : "",
+        })
+      } catch (error) {
+        console.error("Error fetching job details:", error)
+        toast.error("Failed to fetch job details")
+        navigate("/dashboard/recruiter")
+      } finally {
+        setFetchLoading(false)
+      }
+    }
+
+    if (jobId && token) {
+      fetchJobDetails()
+    }
+  }, [jobId, token, user._id, navigate])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -37,8 +90,6 @@ function CreateJobForm() {
     // Convert comma-separated strings to arrays
     const jobData = {
       ...formData,
-      // Use company name from user profile
-      company: user.companyName,
       requirements: formData.requirements
         .split(",")
         .map((item) => item.trim())
@@ -56,39 +107,39 @@ function CreateJobForm() {
     setLoading(true)
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/jobs/create`, jobData, {
+      console.log(`Updating job ${jobId} with data:`, jobData)
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/jobs/edit/${jobId}`, jobData, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
       if (response.data.success) {
-        toast.success("Job posted successfully")
-        navigate("/dashboard/recruiter")
+        toast.success("Job updated successfully")
+        navigate(`/jobs/${jobId}`)
       }
     } catch (error) {
-      console.error("Error posting job:", error)
-      toast.error(error.response?.data?.message || "Failed to post job")
+      console.error("Error updating job:", error)
+      toast.error(error.response?.data?.message || "Failed to update job")
     } finally {
       setLoading(false)
     }
   }
 
+  if (fetchLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <button
-            type="button"
-            onClick={() => navigate("/dashboard/recruiter")}
-            className="flex items-center gap-2 mr-4 px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <HiArrowNarrowLeft className="w-5 h-5" />
-            <span>Back</span>
-      </button>
     <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="px-6 py-4 bg-indigo-600">
-        <h2 className="text-xl font-bold text-white">Post a New Job</h2>
+      <div className="px-6 py-4 bg-blue-600">
+        <h2 className="text-xl font-bold text-white">Edit Job</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
               Job Title
@@ -100,7 +151,7 @@ function CreateJobForm() {
               value={formData.title}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
 
@@ -111,9 +162,10 @@ function CreateJobForm() {
             <input
               type="text"
               id="company"
-              value={user.companyName}
+              name="company"
+              value={formData.company}
               disabled
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 text-sm"
             />
           </div>
 
@@ -128,7 +180,7 @@ function CreateJobForm() {
               value={formData.location}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
 
@@ -142,7 +194,7 @@ function CreateJobForm() {
               value={formData.jobType}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
@@ -163,7 +215,7 @@ function CreateJobForm() {
               value={formData.salary}
               onChange={handleChange}
               placeholder="e.g. 5-6 LPA"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
 
@@ -177,12 +229,13 @@ function CreateJobForm() {
               name="deadline"
               value={formData.deadline}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              min={new Date().toISOString().split("T")[0]}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
             Job Description
           </label>
@@ -193,11 +246,11 @@ function CreateJobForm() {
             onChange={handleChange}
             rows={4}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
             Requirements (Comma separated)
           </label>
@@ -208,11 +261,11 @@ function CreateJobForm() {
             onChange={handleChange}
             rows={3}
             placeholder="Bachelor's degree in Computer Science, 3+ years of experience, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <label htmlFor="responsibilities" className="block text-sm font-medium text-gray-700">
             Responsibilities (Comma separated)
           </label>
@@ -223,11 +276,11 @@ function CreateJobForm() {
             onChange={handleChange}
             rows={3}
             placeholder="Develop and maintain web applications, Collaborate with team members, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
             Required Skills (Comma separated)
           </label>
@@ -238,32 +291,30 @@ function CreateJobForm() {
             onChange={handleChange}
             rows={2}
             placeholder="JavaScript, React, Node.js, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
           <button
             type="button"
-            onClick={() => navigate("/dashboard/recruiter")}
-            className="flex items-center gap-2 mr-4 px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={() => navigate(`/jobs/${jobId}`)}
+            className="flex items-center gap-2 mb-2 sm:mb-0 sm:mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            
+            <HiArrowNarrowLeft className="w-5 h-5" />
             <span>Cancel</span>
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {loading ? "Posting..." : "Post Job"}
+            {loading ? "Updating..." : "Update Job"}
           </button>
         </div>
       </form>
     </div>
-
-    </div>
   )
 }
 
-export default CreateJobForm
+export default EditJobForm

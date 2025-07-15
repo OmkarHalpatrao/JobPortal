@@ -29,7 +29,6 @@ export const useJob = (jobId) => {
     queryFn: () => getJobById(jobId),
     enabled: !!jobId,
     onError: (error) => {
-      console.error(`Error fetching job ${jobId}:`, error)
       toast.error("Failed to fetch job details. Please try again later.")
     },
   })

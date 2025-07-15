@@ -19,20 +19,23 @@ function Navbar() {
   }
 
   const isActive = (path) => {
-    return location.pathname === path ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+    return location.pathname === path
+      ? "border-blue-500 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
   }
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <h1 className="text-xl font-bold text-blue-600">JobPortal</h1>
             </Link>
             {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {(!isAuthenticated || (isAuthenticated && user.accountType === "JobSeeker")) && (
+              {/* Only show Home tab for non-authenticated users */}
+              {!isAuthenticated && (
                 <Link
                   to="/"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive("/")}`}
@@ -100,9 +103,7 @@ function Navbar() {
                       className="flex items-center space-x-3 focus:outline-none"
                     >
                       <span className="text-sm font-medium text-gray-700">
-                        {user.accountType === "JobSeeker"
-                          ? `${user.firstName} ${user.lastName}`
-                          : user.companyName}
+                        {user.accountType === "JobSeeker" ? `${user.firstName} ${user.lastName}` : user.companyName}
                       </span>
                       <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-100">
                         <img
@@ -125,7 +126,7 @@ function Navbar() {
                           onClick={() => setProfileMenuOpen(false)}
                         >
                           <HiOutlineUser className="mr-2 h-5 w-5 text-gray-500" />
-                          My Profile
+                          Your Profile
                         </Link>
                         <button
                           onClick={() => {
@@ -144,16 +145,10 @@ function Navbar() {
               </div>
             ) : (
               <div className="flex space-x-4">
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                >
+                <Link to="/login" className="text-sm font-medium text-blue-600 hover:text-blue-800">
                   Login
                 </Link>
-                <Link
-                  to="/signup"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                >
+                <Link to="/signup" className="text-sm font-medium text-blue-600 hover:text-blue-800">
                   Register
                 </Link>
               </div>
@@ -164,28 +159,27 @@ function Navbar() {
           <div className="flex items-center sm:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="inline-flex items-center justify-center p-3 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
             >
-              <span className="sr-only">{mobileMenuOpen ? 'Close menu' : 'Open menu'}</span>
-              {mobileMenuOpen ? (
-                <HiOutlineX className="block h-6 w-6" />
-              ) : (
-                <HiOutlineMenu className="block h-6 w-6" />
-              )}
+              <span className="sr-only">{mobileMenuOpen ? "Close menu" : "Open menu"}</span>
+              {mobileMenuOpen ? <HiOutlineX className="block h-6 w-6" /> : <HiOutlineMenu className="block h-6 w-6" />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      <div className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
+      <div className={`${mobileMenuOpen ? "block" : "hidden"} sm:hidden transition-all duration-200 ease-in-out`}>
         <div className="pt-2 pb-3 space-y-1">
-          {(!isAuthenticated || (isAuthenticated && user?.accountType === "JobSeeker")) && (
+          {/* Only show Home tab for non-authenticated users in mobile menu too */}
+          {!isAuthenticated && (
             <Link
               to="/"
               className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === "/" 
-                  ? "border-blue-500 text-blue-700 bg-blue-50" 
+                location.pathname === "/"
+                  ? "border-blue-500 text-blue-700 bg-blue-50"
                   : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -198,8 +192,8 @@ function Navbar() {
             <Link
               to="/jobs"
               className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === "/jobs" 
-                  ? "border-blue-500 text-blue-700 bg-blue-50" 
+                location.pathname === "/jobs"
+                  ? "border-blue-500 text-blue-700 bg-blue-50"
                   : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -212,8 +206,8 @@ function Navbar() {
             <Link
               to="/saved-jobs"
               className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === "/saved-jobs" 
-                  ? "border-blue-500 text-blue-700 bg-blue-50" 
+                location.pathname === "/saved-jobs"
+                  ? "border-blue-500 text-blue-700 bg-blue-50"
                   : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -226,8 +220,8 @@ function Navbar() {
             <Link
               to="/dashboard/jobseeker"
               className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === "/dashboard/jobseeker" 
-                  ? "border-blue-500 text-blue-700 bg-blue-50" 
+                location.pathname === "/dashboard/jobseeker"
+                  ? "border-blue-500 text-blue-700 bg-blue-50"
                   : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -241,8 +235,8 @@ function Navbar() {
               <Link
                 to="/dashboard/recruiter"
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  location.pathname === "/dashboard/recruiter" 
-                    ? "border-blue-500 text-blue-700 bg-blue-50" 
+                  location.pathname === "/dashboard/recruiter"
+                    ? "border-blue-500 text-blue-700 bg-blue-50"
                     : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -252,8 +246,8 @@ function Navbar() {
               <Link
                 to="/dashboard/applications"
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  location.pathname === "/dashboard/applications" 
-                    ? "border-blue-500 text-blue-700 bg-blue-50" 
+                  location.pathname === "/dashboard/applications"
+                    ? "border-blue-500 text-blue-700 bg-blue-50"
                     : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -282,9 +276,7 @@ function Navbar() {
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    {user.accountType === "JobSeeker"
-                      ? `${user.firstName} ${user.lastName}`
-                      : user.companyName}
+                    {user.accountType === "JobSeeker" ? `${user.firstName} ${user.lastName}` : user.companyName}
                   </div>
                   <div className="text-sm font-medium text-gray-500">{user.email}</div>
                 </div>
@@ -295,7 +287,7 @@ function Navbar() {
                   className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  My Profile
+                  Your Profile
                 </Link>
                 <button
                   onClick={handleLogout}

@@ -9,6 +9,7 @@ const statusUpdateTemplate = require("../utils/statusUpdateTemplate")
 
 // Apply for a job
 exports.applyForJob = async (req, res) => {
+  console.log("[Application] applyForJob called", { jobId: req.params.jobId, userId: req.user?.id })
   try {
     const { jobId } = req.params
     const userId = req.user.id
@@ -98,7 +99,7 @@ exports.applyForJob = async (req, res) => {
       application,
     })
   } catch (error) {
-    console.error("Error in applyForJob:", error)
+    console.error("[Application] Error in applyForJob:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to submit application",
@@ -132,9 +133,16 @@ exports.getJobApplications = async (req, res) => {
     }
 
     // Get applications
-    const applications = await Application.find({ job: jobId })
-      .populate("applicant", "firstName lastName email")
-      .populate("job", "title company")
+    const applications = await Application.find({ applicant: userId })
+      .populate({
+        path: "job",
+        select: "title company location salary jobType deadline recruiter",
+        populate: {
+          path: "recruiter",
+          select: "firstName lastName _id", // 👈 include _id for linking
+        },
+      })
+      .sort({ appliedDate: -1 });
 
     return res.status(200).json({
       success: true,
@@ -152,6 +160,7 @@ exports.getJobApplications = async (req, res) => {
 
 // Update application status (recruiter only)
 exports.updateApplicationStatus = async (req, res) => {
+  console.log("[Application] updateApplicationStatus called", { applicationId: req.params.applicationId, status: req.body.status })
   try {
     const { applicationId } = req.params
     const userId = req.user.id
@@ -221,7 +230,7 @@ exports.updateApplicationStatus = async (req, res) => {
       application,
     })
   } catch (error) {
-    console.error("Error in updateApplicationStatus:", error)
+    console.error("[Application] Error in updateApplicationStatus:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to update application status",
@@ -232,6 +241,7 @@ exports.updateApplicationStatus = async (req, res) => {
 
 // Get user's applications (job seeker only)
 exports.getUserApplications = async (req, res) => {
+  console.log("[Application] getUserApplications called", { userId: req.user?.id })
   try {
     const userId = req.user.id
 
@@ -246,15 +256,22 @@ exports.getUserApplications = async (req, res) => {
 
     // Get applications
     const applications = await Application.find({ applicant: userId })
-      .populate("job", "title company location salary jobType deadline")
-      .sort({ appliedDate: -1 })
+      .populate({
+        path: "job",
+        select: "title company location salary jobType deadline recruiter",
+        populate: {
+          path: "recruiter",
+          select: "firstName lastName _id", // 👈 include _id for linking
+        },
+      })
+      .sort({ appliedDate: -1 });
 
     return res.status(200).json({
       success: true,
       applications,
     })
   } catch (error) {
-    console.error("Error in getUserApplications:", error)
+    console.error("[Application] Error in getUserApplications:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to fetch applications",

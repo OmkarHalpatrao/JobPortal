@@ -203,93 +203,112 @@ function ApplicationsTab() {
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 text-gray-600 text-sm">
-                      <tr>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Applicant
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Resume
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Applied Date
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {applications.map((application) => (
-                        <tr key={application._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <Link
-                                to={`/dashboard/applicantProfile/${application.applicant._id}`}
-                                className="font-medium text-gray-800 hover:text-blue-600"
-                              >
-                                {application.applicant.firstName}{" "}
-                                {application.applicant.lastName}
-                              </Link>
-                              <div className="text-sm text-gray-500">
-                                {application.applicant.email}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <a
-                              href={application.resume}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              View Resume
-                            </a>
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {format(
-                              new Date(application.appliedDate),
-                              "MMM dd, yyyy"
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
-                                application.status
-                              )}`}
-                            >
-                              {application.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <select
-                              value={application.status}
-                              onChange={(e) =>
-                                handleStatusChange(
-                                  application._id,
-                                  e.target.value
-                                )
-                              }
-                              className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                              disabled={updateStatusMutation.isPending}
-                            >
-                              <option value="Pending">Pending</option>
-                              <option value="Reviewing">Reviewing</option>
-                              <option value="Shortlisted">Shortlisted</option>
-                              <option value="Rejected">Rejected</option>
-                              <option value="Hired">Hired</option>
-                            </select>
-                          </td>
+                <>
+                  {/* Card layout for mobile, table for md+ */}
+                  <div className="block md:hidden space-y-4 p-4">
+                    {applications.map((application) => (
+                      <div key={application._id} className="bg-gray-50 rounded-lg shadow p-4 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <Link
+                            to={`/dashboard/applicantProfile/${application.applicant._id}`}
+                            className="font-semibold text-blue-700 hover:underline truncate"
+                          >
+                            {application.applicant.firstName} {application.applicant.lastName}
+                          </Link>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(application.status)}`}>{application.status}</span>
+                        </div>
+                        <div className="text-sm text-gray-500 truncate">{application.applicant.email}</div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <a
+                            href={application.resume}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                          >
+                            View Resume
+                          </a>
+                          <span className="text-gray-400">|</span>
+                          <span>{format(new Date(application.appliedDate), "MMM dd, yyyy")}</span>
+                        </div>
+                        <div>
+                          <select
+                            value={application.status}
+                            onChange={(e) => handleStatusChange(application._id, e.target.value)}
+                            className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Reviewing">Reviewing</option>
+                            <option value="Shortlisted">Shortlisted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Hired">Hired</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Table for md+ */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 text-gray-600 text-sm">
+                        <tr>
+                          <th className="px-6 py-3 text-left font-medium">Applicant</th>
+                          <th className="px-6 py-3 text-left font-medium">Resume</th>
+                          <th className="px-6 py-3 text-left font-medium">Applied Date</th>
+                          <th className="px-6 py-3 text-left font-medium">Status</th>
+                          <th className="px-6 py-3 text-left font-medium">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {applications.map((application) => (
+                          <tr key={application._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div>
+                                <Link
+                                  to={`/dashboard/applicantProfile/${application.applicant._id}`}
+                                  className="font-medium text-gray-800 hover:text-blue-600"
+                                >
+                                  {application.applicant.firstName} {application.applicant.lastName}
+                                </Link>
+                                <div className="text-sm text-gray-500">{application.applicant.email}</div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <a
+                                href={application.resume}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                View Resume
+                              </a>
+                            </td>
+                            <td className="px-6 py-4 text-gray-600">
+                              {format(new Date(application.appliedDate), "MMM dd, yyyy")}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(application.status)}`}>{application.status}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <select
+                                value={application.status}
+                                onChange={(e) => handleStatusChange(application._id, e.target.value)}
+                                className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                disabled={updateStatusMutation.isPending}
+                              >
+                                <option value="Pending">Pending</option>
+                                <option value="Reviewing">Reviewing</option>
+                                <option value="Shortlisted">Shortlisted</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Hired">Hired</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           ) : (

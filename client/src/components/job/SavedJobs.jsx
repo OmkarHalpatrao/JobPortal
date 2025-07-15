@@ -64,7 +64,8 @@ function SavedJobs() {
               job={job}
               isApplied={appliedJobs.includes(job._id)}
               isSaved={true}
-              onUnsave={() => handleJobUnsaved(job._id)}
+              toggleSaveJob={toggleSaveJob}
+              savedMode={true}
             />
           ))}
         </div>

@@ -3,8 +3,8 @@ import { Link } from "react-router-dom"
 function Footer() {
   return (
     <footer className="bg-gray-800 text-white">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="col-span-1 md:col-span-2">
             <h1 className="text-2xl font-bold text-white">JobPortal</h1>
             <p className="mt-4 text-gray-300">
@@ -103,7 +103,7 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="mt-8 border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
           <p className="text-gray-300">&copy; {new Date().getFullYear()} JobPortal. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             

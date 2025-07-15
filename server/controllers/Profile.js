@@ -133,6 +133,7 @@ exports.uploadProfilePhoto = async (req, res) => {
 
 // Upload company logo
 exports.uploadCompanyLogo = async (req, res) => {
+  console.log("[Profile] uploadCompanyLogo called", { userId: req.user?.id })
   try {
     const userId = req.user.id
 
@@ -171,7 +172,7 @@ exports.uploadCompanyLogo = async (req, res) => {
       logoUrl: user.companyLogo,
     })
   } catch (error) {
-    console.error("Error in uploadCompanyLogo:", error)
+    console.error("[Profile] Error in uploadCompanyLogo:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to upload company logo",
@@ -180,3 +181,62 @@ exports.uploadCompanyLogo = async (req, res) => {
   }
 }
 
+exports.updateCompanyName = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { companyName } = req.body
+
+    if (!companyName || companyName.trim() === "") {
+      return res.status(400).json({ success: false, message: "Company name is required" })
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { companyName }, { new: true })
+
+    return res.status(200).json({
+      success: true,
+      message: "Company name updated successfully",
+      companyName: user.companyName,
+    })
+  } catch (error) {
+    console.error("Error updating company name:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update company name",
+      error: error.message,
+    })
+  }
+}
+
+// Get company profile by recruiter user ID
+exports.getCompanyProfile = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    // Find user with recruiter role and populate additionalDetails
+    const user = await User.findOne({ _id: companyId, accountType: "Recruiter" }).populate("additionalDetails");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found",
+      });
+    }
+    // Return public company info
+    return res.status(200).json({
+      success: true,
+      company: {
+        _id: user._id,
+        companyName: user.companyName,
+        companyLogo: user.companyLogo,
+        additionalDetails: user.additionalDetails,
+        email: user.email,
+        contactNumber: user.contactNumber,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getCompanyProfile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch company profile",
+      error: error.message,
+    });
+  }
+};

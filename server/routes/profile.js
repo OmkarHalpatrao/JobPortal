@@ -1,7 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const { getProfile, updateProfile, uploadProfilePhoto, uploadCompanyLogo } = require("../controllers/Profile")
+const { getProfile, updateProfile, uploadProfilePhoto, uploadCompanyLogo, getCompanyProfile } = require("../controllers/Profile")
 const { auth } = require("../middleware/auth")
+const { updateCompanyName } = require("../controllers/Profile")
 const { cloudinary } = require("../config/cloudinary")
 const multer = require("multer")
 const { CloudinaryStorage } = require("multer-storage-cloudinary")
@@ -57,6 +58,7 @@ router.get("/", auth, getProfile)
 router.put("/", auth, updateProfile)
 router.post("/upload-photo", auth, profilePhotoUpload.single("profilePhoto"), uploadProfilePhoto)
 router.post("/upload-logo", auth, companyLogoUpload.single("companyLogo"), uploadCompanyLogo)
-
+router.put("/company-name", auth, updateCompanyName)
+router.get("/company/:companyId", getCompanyProfile)
 module.exports = router
 

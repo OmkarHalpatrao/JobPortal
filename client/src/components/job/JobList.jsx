@@ -26,7 +26,12 @@ function JobList() {
   })
 
   // Get saved jobs
-  const { isJobSaved } = useSavedJobs()
+  const {
+    savedJobs,
+    isJobSaved,
+    toggleSaveJob,
+    loading: savedJobsLoading,
+  } = useSavedJobs()
 
   // Extract jobs array from the response
   const jobs = jobsData?.jobs || []
@@ -91,7 +96,7 @@ function JobList() {
     toast.error("Failed to fetch jobs. Please try again later.")
   }
 
-  if (jobsLoading) {
+  if (jobsLoading || savedJobsLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -157,7 +162,7 @@ function JobList() {
       </div>
 
       {/* Results */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">
             {filteredJobs.length} {filteredJobs.length === 1 ? "Job" : "Jobs"} Found
@@ -170,13 +175,14 @@ function JobList() {
             <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredJobs.map((job) => (
               <JobCard
                 key={job._id}
                 job={job}
                 isApplied={appliedJobs.includes(job._id)}
                 isSaved={isJobSaved(job._id)}
+                toggleSaveJob={toggleSaveJob}
               />
             ))}
           </div>

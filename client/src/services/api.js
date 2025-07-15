@@ -22,7 +22,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle errors globally here
-    console.error("API Error:", error)
     return Promise.reject(error)
   },
 )

@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const otpGenerator = require("otp-generator")
 require("dotenv").config()
+const redis = require("redis")
 
 // Send OTP for Email Verification
 exports.sendOTP = async (req, res) => {
@@ -39,8 +40,12 @@ exports.sendOTP = async (req, res) => {
     }
 
     // Create OTP entry in DB
-    const otpPayload = { email, otp }
-    const otpBody = await OTP.create(otpPayload)
+    // const otpPayload = { email, otp }
+    // const otpBody = await OTP.create(otpPayload)
+
+    await redis.set(`otp:${email}`,otp,{
+      EX:300
+    })
 
     res.status(200).json({
       success: true,
@@ -88,13 +93,19 @@ exports.signup = async (req, res) => {
     }
 
     // Verify OTP
-    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1)
+    // DB
+    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    recentOtp = recentOtp[0].otp;
+
+    //Redis
+    // const recentOtp = await redis.get(`otp:${email}`);
+    
     if (recentOtp.length === 0) {
       return res.status(400).json({
         success: false,
         message: "OTP not found",
       })
-    } else if (otp !== recentOtp[0].otp) {
+    } else if (otp !== recentOtp) {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
@@ -158,6 +169,7 @@ exports.signup = async (req, res) => {
 
 // Login Controller
 exports.login = async (req, res) => {
+  console.log("[Auth] login called", { email: req.body.email })
   try {
     const { email, password } = req.body
 
@@ -213,7 +225,7 @@ exports.login = async (req, res) => {
       })
     }
   } catch (error) {
-    console.error("Error in login:", error)
+    console.error("[Auth] Error in login:", error)
     return res.status(500).json({
       success: false,
       message: "Login failed",

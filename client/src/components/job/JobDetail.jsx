@@ -28,7 +28,7 @@ function JobDetail() {
     const fetchJobDetails = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`)
-        setJob(response.data.job)
+        setJob(response.data.job || response.data) 
       } catch (error) {
         console.error("Error fetching job details:", error)
         toast.error("Failed to fetch job details")
@@ -261,21 +261,14 @@ function JobDetail() {
   const companyLogo = recruiterInfo.companyLogo || "https://via.placeholder.com/150?text=Company"
 
   return (
-    <div>
-
-      <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-3 py-1 mb-4 text-sm font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 w-fit"
-        >
-          <HiArrowNarrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-    <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+    <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden px-4 sm:px-0 relative">
       {/* Job Header */}
-      <div className="border-b border-gray-200 p-6">
-
-        <div className="flex items-start gap-6">
-          <Link to={`/company/${recruiterInfo._id}`} className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+      <div className="border-b border-gray-200 p-4 sm:p-6 pt-16 sm:pt-16">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+          <Link
+            to={`/profile/${recruiterInfo._id}`}
+            className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 mx-auto sm:mx-0"
+          >
             <img
               src={companyLogo || "/placeholder.svg"}
               alt={job.company}
@@ -287,18 +280,18 @@ function JobDetail() {
             />
           </Link>
           <div className="flex-1">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">{job.title}</h1>
-                <div className="mt-2 flex items-center text-gray-600">
-                  <Link to={`/company/${recruiterInfo._id}`} className="mr-4 hover:text-blue-600">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+              <div className="text-center sm:text-left">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{job.title}</h1>
+                <div className="mt-2 flex flex-col sm:flex-row items-center sm:items-center text-gray-600">
+                  <Link to={`/profile/${recruiterInfo._id}`} className="hover:text-blue-600 mb-1 sm:mb-0 sm:mr-4">
                     {job.company}
                   </Link>
-                  <span className="mr-4">{job.location}</span>
+                  <span className="mb-1 sm:mb-0 sm:mr-4">{job.location}</span>
                   <span>{job.jobType}</span>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-col items-center sm:items-end gap-2 mt-3 sm:mt-0">
                 <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
                   {job.salary ? job.salary : "Salary not disclosed"}
                 </span>
@@ -314,29 +307,35 @@ function JobDetail() {
                 )}
               </div>
             </div>
-            <div className="mt-4 flex justify-between items-center">
-              <div className="text-sm text-gray-500">
+            <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+              <div className="text-sm text-gray-500 text-center sm:text-left mb-3 sm:mb-0">
                 Posted on {format(new Date(job.postedDate), "MMM dd, yyyy")}
-                {job.deadline && <span> • Application deadline: {format(new Date(job.deadline), "MMM dd, yyyy")}</span>}
+                {job.deadline && (
+                  <span className="block sm:inline sm:before:content-['•'] sm:before:mx-2">
+                    Application deadline: {format(new Date(job.deadline), "MMM dd, yyyy")}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center sm:justify-end gap-2">
                 {isAuthenticated && user.accountType === "JobSeeker" && (
-                  <button
-                    onClick={toggleSaveJob}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-md ${
-                      isSaved
-                        ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <BookmarkIcon filled={isSaved} />
-                    <span>{isSaved ? "Saved" : "Save Job"}</span>
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={toggleSaveJob}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-md ${
+                        isSaved
+                          ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                          : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      <BookmarkIcon filled={isSaved} />
+                      <span>{isSaved ? "Saved" : "Save Job"}</span>
+                    </button>
+                  </div>
                 )}
 
                 {/* Recruiter Actions */}
                 {isAuthenticated && user.accountType === "Recruiter" && job.recruiter._id === user._id && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap justify-center gap-2">
                     <Link
                       to={`/jobs/${job._id}/edit`}
                       className="px-3 py-1 text-sm font-medium rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100"
@@ -370,8 +369,7 @@ function JobDetail() {
       </div>
 
       {/* Job Details */}
-      <div className="p-6">
-        
+      <div className="p-4 sm:p-6">
         <section className="mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Description</h2>
           <p className="text-gray-600 whitespace-pre-line">{job.description}</p>
@@ -382,7 +380,9 @@ function JobDetail() {
             <h2 className="text-lg font-semibold text-gray-800 mb-3">Requirements</h2>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
               {job.requirements.map((requirement, index) => (
-                <li key={index}>{requirement}</li>
+                <li key={index} className="break-words">
+                  {requirement}
+                </li>
               ))}
             </ul>
           </section>
@@ -393,7 +393,9 @@ function JobDetail() {
             <h2 className="text-lg font-semibold text-gray-800 mb-3">Responsibilities</h2>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
               {job.responsibilities.map((responsibility, index) => (
-                <li key={index}>{responsibility}</li>
+                <li key={index} className="break-words">
+                  {responsibility}
+                </li>
               ))}
             </ul>
           </section>
@@ -408,6 +410,46 @@ function JobDetail() {
                   {skill}
                 </span>
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* Not Logged In Message */}
+        {!isAuthenticated && job.status === "Active" && (
+          <section className="mt-8 border-t border-gray-200 pt-6">
+            <div className="bg-blue-50 p-4 rounded-md">
+              <div className="flex flex-col sm:flex-row items-center">
+                <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-4">
+                  <svg className="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-lg font-medium text-blue-800">Sign up or log in to apply</h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>You need to create an account or log in to apply for this job.</p>
+                  </div>
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
+                    <Link
+                      to="/login"
+                      className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="inline-flex justify-center items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-md shadow-sm text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}
@@ -456,9 +498,9 @@ function JobDetail() {
         {user?.accountType === "JobSeeker" && hasApplied && (
           <section className="mt-8 border-t border-gray-200 pt-6">
             <div className="bg-green-50 p-4 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+              <div className="flex flex-col sm:flex-row items-center">
+                <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-4">
+                  <svg className="h-8 w-8 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -466,16 +508,16 @@ function JobDetail() {
                     />
                   </svg>
                 </div>
-                <div className="ml-3">
+                <div className="text-center sm:text-left">
                   <h3 className="text-sm font-medium text-green-800">Application Submitted</h3>
                   <div className="mt-2 text-sm text-green-700">
                     <p>You have already applied for this job. You can check the status in your dashboard.</p>
                   </div>
                   <div className="mt-4">
-                    <div className="-mx-2 -my-1.5 flex">
+                    <div className="flex justify-center sm:justify-start">
                       <button
                         onClick={() => navigate("/dashboard/jobseeker")}
-                        className="px-2 py-1.5 rounded-md text-sm font-medium text-green-800 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="px-3 py-1.5 rounded-md text-sm font-medium text-green-800 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
                         View Applications
                       </button>
@@ -490,9 +532,9 @@ function JobDetail() {
         {user?.accountType === "JobSeeker" && job.status !== "Active" && !hasApplied && (
           <section className="mt-8 border-t border-gray-200 pt-6">
             <div className="bg-yellow-50 p-4 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <div className="flex flex-col sm:flex-row items-center">
+                <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-4">
+                  <svg className="h-8 w-8 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
                       d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -500,16 +542,16 @@ function JobDetail() {
                     />
                   </svg>
                 </div>
-                <div className="ml-3">
+                <div className="text-center sm:text-left">
                   <h3 className="text-sm font-medium text-yellow-800">Job Not Accepting Applications</h3>
                   <div className="mt-2 text-sm text-yellow-700">
                     <p>This job is currently {job.status.toLowerCase()} and not accepting new applications.</p>
                   </div>
                   <div className="mt-4">
-                    <div className="-mx-2 -my-1.5 flex">
+                    <div className="flex justify-center sm:justify-start">
                       <button
                         onClick={() => navigate("/jobs")}
-                        className="px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                        className="px-3 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                       >
                         Browse Other Jobs
                       </button>
@@ -524,8 +566,8 @@ function JobDetail() {
 
       {/* Reopen Job Modal */}
       {reopenModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Reopen Job</h3>
             <form onSubmit={handleReopenJob}>
               <div className="mb-4">
@@ -542,11 +584,11 @@ function JobDetail() {
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setReopenModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 mb-2 sm:mb-0"
                 >
                   Cancel
                 </button>
@@ -561,7 +603,6 @@ function JobDetail() {
           </div>
         </div>
       )}
-    </div>
     </div>
   )
 }
