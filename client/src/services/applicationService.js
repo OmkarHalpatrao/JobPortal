@@ -2,7 +2,7 @@ import api from "./api"
 
 // Apply for a job
 export const applyForJob = async (jobId, formData) => {
-  console.log("applyForJob called", { jobId, formData })
+ 
   try {
     const response = await api.post(`/applications/apply/${jobId}`, formData, {
       headers: {
@@ -18,7 +18,7 @@ export const applyForJob = async (jobId, formData) => {
 
 // Get applications for a job (recruiter only)
 export const getJobApplications = async (jobId) => {
-  console.log("getJobApplications called", { jobId })
+  
   try {
     const response = await api.get(`/applications/applicants/${jobId}`)
     return response.data
@@ -30,7 +30,7 @@ export const getJobApplications = async (jobId) => {
 
 // Get user applications (job seeker only)
 export const getUserApplications = async () => {
-  console.log("getUserApplications called")
+  
   try {
     const response = await api.get("/applications/user")
     return response.data
@@ -42,7 +42,7 @@ export const getUserApplications = async () => {
 
 // Update application status
 export const updateApplicationStatus = async (applicationId, status) => {
-  console.log("updateApplicationStatus called", { applicationId, status })
+  
   try {
     const response = await api.put(`/applications/${applicationId}`, { status })
     return response.data

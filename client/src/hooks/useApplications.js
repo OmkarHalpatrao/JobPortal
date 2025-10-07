@@ -14,6 +14,7 @@ export const useUserApplications = () => {
     queryFn: getUserApplications,
     onError: (error) => {
       toast.error("Failed to fetch your applications. Please try again later.")
+      
     },
   })
 }

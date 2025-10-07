@@ -9,8 +9,7 @@ const statusUpdateTemplate = require("../utils/statusUpdateTemplate")
 
 // Apply for a job
 exports.applyForJob = async (req, res) => {
-  console.log("[Application] applyForJob called", { jobId: req.params.jobId, userId: req.user?.id })
-  try {
+ try {
     const { jobId } = req.params
     const userId = req.user.id
     const { coverLetter } = req.body
@@ -160,7 +159,6 @@ exports.getJobApplications = async (req, res) => {
 
 // Update application status (recruiter only)
 exports.updateApplicationStatus = async (req, res) => {
-  console.log("[Application] updateApplicationStatus called", { applicationId: req.params.applicationId, status: req.body.status })
   try {
     const { applicationId } = req.params
     const userId = req.user.id
@@ -241,7 +239,6 @@ exports.updateApplicationStatus = async (req, res) => {
 
 // Get user's applications (job seeker only)
 exports.getUserApplications = async (req, res) => {
-  console.log("[Application] getUserApplications called", { userId: req.user?.id })
   try {
     const userId = req.user.id
 

@@ -51,7 +51,7 @@ exports.createJob = async (req, res) => {
 
 // Get all jobs
 exports.getAllJobs = async (req, res) => {
-  console.log("[Job] getAllJobs called")
+  
   try {
     // Check if there are any jobs in the database
     const jobCount = await Job.countDocuments()
@@ -86,7 +86,7 @@ exports.getAllJobs = async (req, res) => {
 
 // Get job by ID
 exports.getJobById = async (req, res) => {
-  console.log("[Job] getJobById called", { jobId: req.params.jobId })
+  
   try {
     const { jobId } = req.params
 

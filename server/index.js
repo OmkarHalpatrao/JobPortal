@@ -24,6 +24,7 @@ const allowedOrigins = [
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
+app.use(morgan('dev'))
 
 // Swagger docs route
 app.use(
@@ -55,14 +56,14 @@ const authRoutes = require("./routes/auth")
 const jobRoutes = require("./routes/job")
 const applicationRoutes = require("./routes/application")
 const profileRoutes = require("./routes/profile")
-const pingRoutes = require("./routes/ping")
+
 
 // Mount routes
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/jobs", jobRoutes)
 app.use("/api/v1/applications", applicationRoutes)
 app.use("/api/v1/profile", profileRoutes)
-app.use("/api/v1", pingRoutes)
+
 
 // Connect to database
 mongoose

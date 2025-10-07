@@ -169,7 +169,7 @@ exports.signup = async (req, res) => {
 
 // Login Controller
 exports.login = async (req, res) => {
-  console.log("[Auth] login called", { email: req.body.email })
+  
   try {
     const { email, password } = req.body
 

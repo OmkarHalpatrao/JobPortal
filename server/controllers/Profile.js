@@ -133,7 +133,6 @@ exports.uploadProfilePhoto = async (req, res) => {
 
 // Upload company logo
 exports.uploadCompanyLogo = async (req, res) => {
-  console.log("[Profile] uploadCompanyLogo called", { userId: req.user?.id })
   try {
     const userId = req.user.id
 

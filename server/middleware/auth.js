@@ -3,8 +3,8 @@ require("dotenv").config()
 
 // Middleware to authenticate user from token
 exports.auth = async (req, res, next) => {
-  console.log("[Middleware] auth called", { token: req.cookies.token || req.header("Authorization") })
   try {
+    
     // Get token from cookies or authorization header
     const token = req.cookies.token || req.header("Authorization")?.replace("Bearer ", "")
 
@@ -38,7 +38,7 @@ exports.auth = async (req, res, next) => {
 
 // Middleware to check if user is job seeker
 exports.isJobSeeker = async (req, res, next) => {
-  console.log("[Middleware] isJobSeeker called", { user: req.user })
+  
   try {
     if (req.user.accountType !== "JobSeeker") {
       return res.status(403).json({
@@ -58,7 +58,7 @@ exports.isJobSeeker = async (req, res, next) => {
 
 // Middleware to check if user is recruiter
 exports.isRecruiter = async (req, res, next) => {
-  console.log("[Middleware] isRecruiter called", { user: req.user })
+  
   try {
     if (req.user.accountType !== "Recruiter") {
       return res.status(403).json({
