@@ -8,7 +8,8 @@ const {
   deleteJob,
   getRecruiterJobs,
   closeJob,
-  getJobsByRecruiterId
+  getJobsByRecruiterId,
+  reopenJob
 } = require("../controllers/Job")
 const { auth, isRecruiter } = require("../middleware/auth")
 
@@ -48,6 +49,7 @@ router.get("/all", getAllJobs)
 router.get("/:jobId", getJobById)
 router.put("/edit/:jobId", auth, isRecruiter, updateJob)
 router.put("/:jobId/close", auth, isRecruiter, closeJob)
+router.put("/:jobId/reopen", auth, isRecruiter, reopenJob)
 router.delete("/delete/:jobId", auth, isRecruiter, deleteJob)
 router.get("/recruiter/jobs", auth, isRecruiter, getRecruiterJobs)
 // Get public jobs by recruiter ID

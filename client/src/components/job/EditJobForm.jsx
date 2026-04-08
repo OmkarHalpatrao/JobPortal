@@ -40,10 +40,9 @@ function EditJobForm() {
 
         const job = response.data.job
         console.log("Fetched job details:", job)
-        console.log("Current user:", user)
-        // Handle recruiter as object or string
-        const recruiterId = typeof job.recruiter === 'object' ? job.recruiter._id : job.recruiter
-        if (recruiterId !== user._id) {
+
+        // Check if the logged-in user is the recruiter who posted this job
+        if (job.recruiter._id !== user._id) {
           toast.error("You are not authorized to edit this job")
           navigate("/dashboard/recruiter")
           return
@@ -108,7 +107,7 @@ function EditJobForm() {
 
     try {
       console.log(`Updating job ${jobId} with data:`, jobData)
-      const response = await axios.put(`${import.meta.env.VITE_API_URL}/jobs/edit/${jobId}`, jobData, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, jobData, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -138,8 +137,8 @@ function EditJobForm() {
         <h2 className="text-xl font-bold text-white">Edit Job</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 sm:p-6">
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="p-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
               Job Title
@@ -151,7 +150,7 @@ function EditJobForm() {
               value={formData.title}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
 
@@ -165,7 +164,7 @@ function EditJobForm() {
               name="company"
               value={formData.company}
               disabled
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 sm:text-sm"
             />
           </div>
 
@@ -180,7 +179,7 @@ function EditJobForm() {
               value={formData.location}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
 
@@ -194,7 +193,7 @@ function EditJobForm() {
               value={formData.jobType}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
@@ -214,8 +213,8 @@ function EditJobForm() {
               name="salary"
               value={formData.salary}
               onChange={handleChange}
-              placeholder="e.g. 5-6 LPA"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              placeholder="e.g. $50,000 - $70,000"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
 
@@ -230,12 +229,12 @@ function EditJobForm() {
               value={formData.deadline}
               onChange={handleChange}
               min={new Date().toISOString().split("T")[0]}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-6">
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
             Job Description
           </label>
@@ -246,11 +245,11 @@ function EditJobForm() {
             onChange={handleChange}
             rows={4}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-6">
           <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
             Requirements (Comma separated)
           </label>
@@ -261,11 +260,11 @@ function EditJobForm() {
             onChange={handleChange}
             rows={3}
             placeholder="Bachelor's degree in Computer Science, 3+ years of experience, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-6">
           <label htmlFor="responsibilities" className="block text-sm font-medium text-gray-700">
             Responsibilities (Comma separated)
           </label>
@@ -276,11 +275,11 @@ function EditJobForm() {
             onChange={handleChange}
             rows={3}
             placeholder="Develop and maintain web applications, Collaborate with team members, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-6">
           <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
             Required Skills (Comma separated)
           </label>
@@ -291,15 +290,15 @@ function EditJobForm() {
             onChange={handleChange}
             rows={2}
             placeholder="JavaScript, React, Node.js, etc."
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+        <div className="mt-8 flex justify-end">
           <button
             type="button"
             onClick={() => navigate(`/jobs/${jobId}`)}
-            className="flex items-center gap-2 mb-2 sm:mb-0 sm:mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex items-center gap-2 mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <HiArrowNarrowLeft className="w-5 h-5" />
             <span>Cancel</span>

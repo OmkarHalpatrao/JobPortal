@@ -131,8 +131,9 @@ exports.getJobApplications = async (req, res) => {
       })
     }
 
-    // Get applications
-    const applications = await Application.find({ applicant: userId })
+    // Get applications for this job
+    const applications = await Application.find({ job: jobId })
+      .populate("applicant", "firstName lastName email")
       .populate({
         path: "job",
         select: "title company location salary jobType deadline recruiter",

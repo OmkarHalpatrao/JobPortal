@@ -192,7 +192,7 @@ function JobDetail() {
         formData.append("coverLetter", coverLetter)
 
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/applications/job/${job._id}`,
+          `${import.meta.env.VITE_API_URL}/applications/apply/${job._id}`,
           {
             method: "POST",
             headers: { Authorization: `Bearer ${user.token}` },

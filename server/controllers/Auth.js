@@ -40,12 +40,12 @@ exports.sendOTP = async (req, res) => {
     }
 
     // Create OTP entry in DB
-    // const otpPayload = { email, otp }
-    // const otpBody = await OTP.create(otpPayload)
+    const otpPayload = { email, otp }
+    const otpBody = await OTP.create(otpPayload)
 
-    await redis.set(`otp:${email}`,otp,{
-      EX:300
-    })
+    // await redis.set(`otp:${email}`,otp,{
+    //   EX:300
+    // })
 
     res.status(200).json({
       success: true,
@@ -94,7 +94,7 @@ exports.signup = async (req, res) => {
 
     // Verify OTP
     // DB
-    const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    let recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
     recentOtp = recentOtp[0].otp;
 
     //Redis

@@ -4,6 +4,7 @@ const cors = require("cors")
 const cookieParser = require("cookie-parser")
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
+const morgan = require("morgan");
 // const redis = require("redis");
 // const client = redis.createClient();
 
@@ -18,7 +19,7 @@ const app = express()
 const allowedOrigins = [
   process.env.CLIENT_URL,               
   "http://localhost:5173",
-  "http://localhost:4000",               
+  "http://localhost:5000",               
 ]
 
 // Middleware

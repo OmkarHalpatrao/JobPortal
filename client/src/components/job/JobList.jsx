@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect,useMemo } from "react"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import JobCard from "./JobCard"

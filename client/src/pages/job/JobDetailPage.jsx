@@ -1,6 +1,6 @@
 import { HiArrowNarrowLeft } from "react-icons/hi"
 import { useNavigate } from "react-router-dom"
-import JobDetail from "../../components/job/JobDetail"
+import NewJobDetail from "../../components/job/NewJobDetail"
 
 function JobDetailPage() {
   const navigate = useNavigate()
@@ -16,7 +16,7 @@ function JobDetailPage() {
         <span className="font-semibold">Back</span>
       </button>
       <div>
-        <JobDetail />
+        <NewJobDetail />
       </div>
     </div>
   )

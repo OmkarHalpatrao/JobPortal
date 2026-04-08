@@ -5,7 +5,7 @@ const Application = require("../models/Application")
 // Create a new job
 exports.createJob = async (req, res) => {
   try {
-    const { title, description, company, location, jobType, salary, requirements, responsibilities, skills, deadline } =
+    const { title, description, location, jobType, salary, requirements, responsibilities, skills, deadline } =
       req.body
 
     // Get recruiter from request
@@ -19,12 +19,16 @@ exports.createJob = async (req, res) => {
         message: "Only recruiters can post jobs",
       })
     }
-
+    console.log('Recruiter:', recruiter.companyName)
+    const companyName = recruiter.companyName
+    if (!companyName) {
+      return res.status(400).json({ success: false, message: 'Recruiter profile missing company name' })
+    }
     // Create job
     const job = await Job.create({
       title,
       description,
-      company,
+      company:companyName,
       location,
       jobType,
       salary,
@@ -206,6 +210,48 @@ exports.closeJob = async (req, res) => {
   }
 }
 
+//reopen job
+exports.reopenJob = async (req, res) => {
+  try {
+    const { jobId } = req.params
+    const userId = req.user.id
+
+    // Find job
+    const job = await Job.findById(jobId)
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found",
+      })
+    }
+
+    // Check if user is the recruiter who posted the job
+    if (job.recruiter.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to close this job",
+      })
+    }
+
+    // Reopen job
+    job.isClosed = false
+    job.isActive = true
+    const { newDeadline } = req.body;
+    await job.save()
+
+    return res.status(200).json({
+      success: true,
+      message: "Job closed successfully",
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to close job",
+      error: error.message,
+    })
+  }
+}
 // Delete job
 exports.deleteJob = async (req, res) => {
   try {
