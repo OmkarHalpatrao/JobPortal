@@ -29,10 +29,18 @@ function ApplicationsTab() {
   const applications = applicationsData?.applications || [];
   const updateStatusMutation = useUpdateApplicationStatus();
 
-  useEffect(() => {
-    if (jobIdParam) setSelectedJob(jobIdParam);
-    else if (jobs.length > 0 && !selectedJob) setSelectedJob(jobs[0]._id);
-  }, [jobIdParam, jobs, selectedJob]);
+  // useEffect(() => {
+  //   if (jobIdParam) setSelectedJob(jobIdParam);
+  //   else if (jobs.length > 0 && !selectedJob) setSelectedJob(jobs[0]._id);
+  // }, [jobIdParam, jobs, selectedJob]);
+
+  useEffect(() =>{
+    if(jobIdParam && jobs.some(job => job._id === jobIdParam)){ 
+      setSelectedJob(jobIdParam);
+    } else if(jobs.length > 0){
+      setSelectedJob(jobs[0]._id);
+    }   
+  }, [jobIdParam, jobs]);
 
   const handleStatusChange = (applicationId, newStatus) => {
     updateStatusMutation.mutate({ applicationId, status: newStatus });

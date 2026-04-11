@@ -1,4 +1,4 @@
-import { useState, useEffect,useMemo } from "react"
+import { useState, useEffect,useMemo, use } from "react"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import JobCard from "./JobCard"
@@ -7,7 +7,7 @@ import { useUserApplications } from "../../hooks/useApplications"
 import { useSavedJobs } from "../../hooks/useSavedJobs"
 
 function JobList() {
-  const [filteredJobs, setFilteredJobs] = useState([])
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({
     jobType: "",
@@ -39,37 +39,26 @@ function JobList() {
   // Extract applied job IDs
   const appliedJobs = applicationsData?.applications?.map((app) => app.job._id) || []
 
-  // Filter jobs based on search term and filters
-  useEffect(() => {
-    let result = jobs
+ 
 
-    // Filter by search term (title, company, or skills)
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      result = result.filter(
-        (job) =>
-          job.title.toLowerCase().includes(term) ||
-          job.company.toLowerCase().includes(term) ||
-          job.skills.some((skill) => skill.toLowerCase().includes(term)),
-      )
+  const filteredJobs = useMemo(()=>{
+    let result = jobs;
+
+    if(searchTerm){
+      const term = searchTerm.toLowerCase();
+      result = result.filter(job =>
+        job.title.toLowerCase().includes(term) ||
+        job.company.toLowerCase().includes(term) || 
+        job.skills.some(skills =>skills.toLowerCase().includes(term))
+      );
     }
 
-    // Apply additional filters
-    if (filters.jobType) {
-      result = result.filter((job) => job.jobType === filters.jobType)
-    }
-
-    if (filters.location) {
-      result = result.filter((job) => job.location.toLowerCase().includes(filters.location.toLowerCase()))
-    }
-
-    if (filters.salary) {
-      result = result.filter((job) => job.salary && job.salary.includes(filters.salary))
-    }
-
-    setFilteredJobs(result)
-  }, [searchTerm, filters, jobs])
-
+    if(filters.jobType) result = result.filter(job => job.jobType === filters.jobType);
+    if(filters.location) result = result.filter(job => job.location.toLowerCase().includes(filters.location.toLowerCase()));
+    if(filters.salary) result = result.filter(job => job.salary && job.salary.includes(filters.salary));
+    
+    return result;
+  }, [searchTerm,filters,jobs]);
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value)
   }
@@ -92,16 +81,29 @@ function JobList() {
   }
 
   // Show error if jobs fetch failed
-  if (jobsError) {
-    toast.error("Failed to fetch jobs. Please try again later.")
-  }
+  useEffect(() => {
+    if (jobsError) {
+      toast.error("Failed to fetch jobs. Please try again later.")
+    }
 
-  if (jobsLoading || savedJobsLoading) {
+  },[jobsError]);
+
+  // if (jobsLoading || savedJobsLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  //     </div>
+  //   )
+  // }
+
+    if (jobsLoading || savedJobsLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        {[1, 2, 3].map(i => (
+           <div key={i} className="h-48 w-full bg-gray-100 animate-pulse rounded-lg bg-gradient-to-r from-gray-100 to-gray-200"></div>
+        ))}
       </div>
-    )
+   )
   }
 
   return (

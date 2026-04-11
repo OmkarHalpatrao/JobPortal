@@ -1,21 +1,3 @@
-/**
- * JobDetail.jsx — Fixed & Redesigned
- *
- * ROOT CAUSE FIX: The original component only rendered job.description.
- * All other fields (salary, deadline, requirements, benefits, skills,
- * experience, applications count, etc.) were completely absent from the JSX.
- *
- * Additional improvements:
- *  - Full job detail layout: metadata chips, salary, deadline, requirements,
- *    responsibilities, benefits, skills tags, apply form, save button
- *  - Application form shown inline (no separate page needed)
- *  - Recruiter actions clean, not floating oddly
- *  - Proper loading skeleton instead of a spinner
- *  - Mobile-first responsive layout
- *  - Semantic HTML + ARIA
- *  - No unnecessary re-renders (stable handlers)
- */
-
 import { useState, useCallback } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthProvider, useAuth } from "./context/AuthContext"
-import RenderOptimizer from "./components/common/RandomOptimizer"
+
 import PublicRoute from "./components/auth/PublicRoute"
 
 // Layouts
@@ -30,7 +30,7 @@ import ApplicationsPage from "./pages/dashboard/ApplicationsPage"
 import ProfilePage from "./pages/profile/ProfilePage"
 import CompanyProfilePage from "./pages/company/CompanyProfilePage"
 import ApplicantProfilePage from "./pages/applicant/ApplicantProfilePage"
-
+import { ErrorBoundary } from "./components/common/ErrorBoundary"
 // Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user, loading } = useAuth()
@@ -57,8 +57,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 function App() {
   return (
     <AuthProvider>
+      <ErrorBoundary>
       <BrowserRouter>
-        <RenderOptimizer />
+     
         <Toaster position="top-right" />
         <Routes>
           {/* Public routes */}
@@ -184,6 +185,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
     </AuthProvider>
   )
 }

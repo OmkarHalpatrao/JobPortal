@@ -18,23 +18,24 @@ function RecruiterDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const { data: jobsData, isLoading: jobsLoading } = useRecruiterJobs()
+  const { data: jobsData, isLoading: jobsLoading,isError } = useRecruiterJobs()
   const closeJobMutation = useCloseJob()
   const deleteJobMutation = useDeleteJob()
-
+  
   const jobs = jobsData?.jobs || []
-
+  
   const handleCloseJob = async (jobId) => {
     if (!confirm("Close this job? It will no longer accept applications.")) return
     closeJobMutation.mutate(jobId)
   }
-
+  
   const handleDeleteJob = async (jobId) => {
     if (!confirm("Delete this job permanently? This cannot be undone.")) return
     deleteJobMutation.mutate(jobId)
   }
-
+  
   if (jobsLoading) return <LoadingSkeleton />
+  if (isError) return <div className="text-center py-20 text-red-500 font-bold">Failed to load dashboard data.</div>
 
   return (
     <div className="max-w-7xl mx-auto px-4 pb-20 animate-in fade-in duration-700">
@@ -88,7 +89,7 @@ function RecruiterDashboard() {
                   </span>
                   <div className="flex items-center gap-1.5 text-gray-400 font-bold">
                     <HiOutlineUsers className="w-4 h-4" />
-                    <span className="text-xs">{job.applications.length}</span>
+                    <span className="text-xs">{job.applications?.length || 0}</span>
                   </div>
                 </div>
 

@@ -30,7 +30,7 @@ export const useJobDetail = () => {
   const fetchJobDetails = useCallback(async (signal) => {
   try {
     const data = await getJobById(jobId, signal);
-    if (!signal.aborted) setJobState({ job: data.job, loading: false, error: null });
+    if (!signal || !signal.aborted) setJobState({ job: data.job, loading: false, error: null });
   } catch (e) {
     if (e.name !== 'AbortError') setJobState({ job: null, loading: false, error: e.message });
   }
@@ -122,9 +122,6 @@ useEffect(() => {
       console.error("Failed to update job:", error)
     }
   }
-  useEffect(() => {
-    fetchJobDetails()
-  }, [fetchJobDetails])
 
   useEffect(() => {
     checkApplicationStatus()
