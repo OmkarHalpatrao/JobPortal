@@ -113,7 +113,7 @@ exports.uploadProfilePhoto = async (req, res) => {
     }
 
     // Update user's profile photo
-    user.profilePhoto = req.file.path
+    user.profilePhoto = req.file.secure_url || req.file.path
     await user.save()
 
     return res.status(200).json({
@@ -162,7 +162,7 @@ exports.uploadCompanyLogo = async (req, res) => {
     }
 
     // Update user's company logo
-    user.companyLogo = req.file.path
+    user.companyLogo = req.file.secure_url || req.file.path
     await user.save()
 
     return res.status(200).json({

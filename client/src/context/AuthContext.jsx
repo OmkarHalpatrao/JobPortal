@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useState, useContext, useEffect } from "react"
-import axios from "axios"
+import api, { setAccessToken } from "../services/api"
 
 const AuthContext = createContext()
 
@@ -12,40 +12,59 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Initialize auth state from localStorage
+  // Initialize auth state
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
-    const storedToken = localStorage.getItem("token")
 
-    if (storedUser && storedToken) {
+    if (storedUser) {
       setUser(JSON.parse(storedUser))
-      setToken(storedToken)
-      // Set default axios auth header
-      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+      // Proactively refresh token to secure the session in memory
+      api.post('/auth/refresh').then(res => {
+        setToken(res.data.accessToken);
+        setAccessToken(res.data.accessToken);
+      }).catch(err => {
+        // Refresh token invalid or missing, clear the unauthenticated user
+        setUser(null)
+        setToken(null)
+        setAccessToken(null)
+        localStorage.removeItem("user")
+      }).finally(() => {
+        setLoading(false)
+      })
+    } else {
+      setLoading(false)
     }
 
-    setLoading(false)
+    const handleForceLogout = () => {
+      setUser(null)
+      setToken(null)
+      setAccessToken(null)
+      localStorage.removeItem("user")
+    };
+    
+    window.addEventListener('auth:logout', handleForceLogout);
+    return () => window.removeEventListener('auth:logout', handleForceLogout);
   }, [])
 
   // Login function
   const login = (userData, authToken) => {
     setUser(userData)
     setToken(authToken)
+    setAccessToken(authToken)
     localStorage.setItem("user", JSON.stringify(userData))
-    localStorage.setItem("token", authToken)
-    // Set default axios auth header
-    axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`
   }
 
-  // Logout function - MODIFIED to preserve saved jobs
-  const logout = () => {
-    // We don't remove savedJobs from localStorage anymore
+  // Logout function
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error("Logout request failed or ignored:", e);
+    }
     setUser(null)
     setToken(null)
+    setAccessToken(null)
     localStorage.removeItem("user")
-    localStorage.removeItem("token")
-    // Remove axios auth header
-    delete axios.defaults.headers.common["Authorization"]
   }
 
   // Update user function
@@ -70,4 +89,5 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
+
 

@@ -18,7 +18,7 @@
  */
 
 import { useState, useRef, useCallback } from "react"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import {
@@ -49,7 +49,8 @@ function InfoRow({ label, value }) {
   return (
     <div>
       <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-800 font-medium">{value}</dd>
+      {/* <dd className="mt-0.5 text-sm text-gray-800 font-medium">{value}</dd> */}
+      <dd className="mt-0.5 text-sm text-gray-800 font-medium break-all overflow-hidden">{value}</dd>
     </div>
   )
 }
@@ -80,6 +81,8 @@ function JobSeekerProfile({ user, profileData }) {
     linkedin: profileData?.socialProfiles?.linkedin || "",
     github: profileData?.socialProfiles?.github || "",
     portfolio: profileData?.socialProfiles?.portfolio || "",
+    experience: profileData?.experience || [],
+    education: profileData?.education || [],
   })
 
   // ── Validation ──────────────────────────────────────────────────────────────
@@ -130,6 +133,8 @@ function JobSeekerProfile({ user, profileData }) {
       linkedin: profileData?.socialProfiles?.linkedin || "",
       github: profileData?.socialProfiles?.github || "",
       portfolio: profileData?.socialProfiles?.portfolio || "",
+      experience: profileData?.experience || [],
+      education: profileData?.education || [],
     })
     setErrors({})
     setIsEditing(false)
@@ -156,13 +161,15 @@ function JobSeekerProfile({ user, profileData }) {
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          experience: formData.experience,
+          education: formData.education,
           socialProfiles: {
             linkedin: formData.linkedin,
             github: formData.github,
             portfolio: formData.portfolio,
           },
         }
-        const response = await axios.put(
+        const response = await api.put(
           `${import.meta.env.VITE_API_URL}/profile`,
           updatedData,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -196,7 +203,7 @@ function JobSeekerProfile({ user, profileData }) {
       const fd = new FormData()
       fd.append("profilePhoto", file)
       try {
-        const response = await axios.post(
+        const response = await api.post(
           `${import.meta.env.VITE_API_URL}/profile/upload-photo`,
           fd,
           {
@@ -212,7 +219,15 @@ function JobSeekerProfile({ user, profileData }) {
           toast.success("Photo updated")
         }
       } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to upload photo")
+        if (err.response?.status === 413) {
+          toast.error("File is too large for Cloudinary (Max 2MB)")
+        } else if (err.response?.status === 415) {
+           toast.error("Invalid file format. Please upload JPG/PNG")
+        } else if (err.message === "Network Error") {
+           toast.error("Network failure. Could not reach image server.")
+        } else {
+          toast.error(err.response?.data?.message || err.message || "Failed to upload file")
+        }
       } finally {
         setPhotoLoading(false)
       }
@@ -484,6 +499,92 @@ function JobSeekerProfile({ user, profileData }) {
                 />
               </Field>
             </div>
+          </div>
+
+          {/* Work Experience */}
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-gray-700">Work Experience</h3>
+              <button type="button" onClick={() => setFormData(prev => ({...prev, experience: [...prev.experience, { company: "", position: "", startDate: "", endDate: "", description: "" }]}))} className="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-lg font-semibold hover:bg-blue-100 transition-colors">+ Add Experience</button>
+            </div>
+            {formData.experience.map((exp, index) => (
+              <div key={index} className="p-4 border border-gray-200 bg-gray-50/50 rounded-xl space-y-4 relative">
+                <button type="button" onClick={() => setFormData(prev => ({...prev, experience: prev.experience.filter((_, i) => i !== index)}))} className="absolute top-4 right-4 p-1 rounded-md text-red-400 hover:text-red-600 transition-colors"><HiOutlineX className="w-5 h-5"/></button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-6">
+                  <Field label="Company" htmlFor={`exp-company-${index}`}>
+                    <input type="text" value={exp.company} onChange={(e) => {
+                      const newExp = [...formData.experience];
+                      newExp[index].company = e.target.value;
+                      setFormData(prev => ({...prev, experience: newExp}));
+                    }} className={inputClass()} placeholder="Company Name" />
+                  </Field>
+                  <Field label="Position" htmlFor={`exp-position-${index}`}>
+                    <input type="text" value={exp.position} onChange={(e) => {
+                      const newExp = [...formData.experience];
+                      newExp[index].position = e.target.value;
+                      setFormData(prev => ({...prev, experience: newExp}));
+                    }} className={inputClass()} placeholder="Job Title" />
+                  </Field>
+                  <Field label="Start Date" htmlFor={`exp-start-${index}`}>
+                    <input type="date" value={exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : ""} onChange={(e) => {
+                      const newExp = [...formData.experience];
+                      newExp[index].startDate = e.target.value;
+                      setFormData(prev => ({...prev, experience: newExp}));
+                    }} className={inputClass()} />
+                  </Field>
+                  <Field label="End Date" htmlFor={`exp-end-${index}`}>
+                    <input type="date" value={exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : ""} onChange={(e) => {
+                      const newExp = [...formData.experience];
+                      newExp[index].endDate = e.target.value;
+                      setFormData(prev => ({...prev, experience: newExp}));
+                    }} className={inputClass()} />
+                  </Field>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Education */}
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-gray-700">Education</h3>
+              <button type="button" onClick={() => setFormData(prev => ({...prev, education: [...prev.education, { institution: "", degree: "", field: "", startDate: "", endDate: "" }]}))} className="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-lg font-semibold hover:bg-blue-100 transition-colors">+ Add Education</button>
+            </div>
+            {formData.education.map((edu, index) => (
+              <div key={index} className="p-4 border border-gray-200 bg-gray-50/50 rounded-xl space-y-4 relative">
+                <button type="button" onClick={() => setFormData(prev => ({...prev, education: prev.education.filter((_, i) => i !== index)}))} className="absolute top-4 right-4 p-1 rounded-md text-red-400 hover:text-red-600 transition-colors"><HiOutlineX className="w-5 h-5"/></button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-6">
+                  <Field label="Institution" htmlFor={`edu-inst-${index}`}>
+                    <input type="text" value={edu.institution} onChange={(e) => {
+                      const newEdu = [...formData.education];
+                      newEdu[index].institution = e.target.value;
+                      setFormData(prev => ({...prev, education: newEdu}));
+                    }} className={inputClass()} placeholder="College/University Name" />
+                  </Field>
+                  <Field label="Degree" htmlFor={`edu-deg-${index}`}>
+                    <input type="text" value={edu.degree} onChange={(e) => {
+                      const newEdu = [...formData.education];
+                      newEdu[index].degree = e.target.value;
+                      setFormData(prev => ({...prev, education: newEdu}));
+                    }} className={inputClass()} placeholder="e.g. B.Tech, B.Sc" />
+                  </Field>
+                   <Field label="Start Date" htmlFor={`edu-start-${index}`}>
+                    <input type="date" value={edu.startDate ? new Date(edu.startDate).toISOString().split('T')[0] : ""} onChange={(e) => {
+                      const newEdu = [...formData.education];
+                      newEdu[index].startDate = e.target.value;
+                      setFormData(prev => ({...prev, education: newEdu}));
+                    }} className={inputClass()} />
+                  </Field>
+                  <Field label="End Date" htmlFor={`edu-end-${index}`}>
+                    <input type="date" value={edu.endDate ? new Date(edu.endDate).toISOString().split('T')[0] : ""} onChange={(e) => {
+                      const newEdu = [...formData.education];
+                      newEdu[index].endDate = e.target.value;
+                      setFormData(prev => ({...prev, education: newEdu}));
+                    }} className={inputClass()} />
+                  </Field>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Action buttons */}

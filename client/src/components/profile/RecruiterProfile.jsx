@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom" // Added for navigation
 import { useAuth } from "../../context/AuthContext"
@@ -81,6 +81,95 @@ function RecruiterProfile({ user, profileData }) {
     setErrors({})
   }, [])
 
+  const handleLogoChange = useCallback(
+    async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+        toast.error("Please upload JPEG or PNG image")
+        return
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image must be smaller than 2MB")
+        return
+      }
+      setLogoLoading(true)
+      const fd = new FormData()
+      fd.append("companyLogo", file)
+      try {
+        const response = await api.post(
+          `/profile/upload-logo`,
+          fd,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (response.data.success) {
+          setCompanyLogo(response.data.logoUrl)
+          updateUser({ ...user, companyLogo: response.data.logoUrl })
+          toast.success("Company logo updated")
+        }
+      } catch (err) {
+        if (err.response?.status === 413) {
+          toast.error("File is too large for Cloudinary (Max 2MB)")
+        } else {
+          toast.error(err.response?.data?.message || "Failed to upload logo")
+        }
+      } finally {
+        setLogoLoading(false)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
+    },
+    [token, updateUser, user]
+  )
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault()
+      if (!formData.companyName?.trim()) {
+        toast.error("Company Name is required")
+        return
+      }
+      setLoading(true)
+      try {
+        if (formData.companyName !== user.companyName) {
+           await api.put(`/profile/company-name`, { companyName: formData.companyName }, { headers: { Authorization: `Bearer ${token}` } })
+        }
+        
+        const updatedData = {
+          companyDescription: formData.companyDescription,
+          industry: formData.industry,
+          companySize: formData.companySize,
+          foundedYear: formData.foundedYear,
+          website: formData.website,
+          location: formData.location,
+          address: formData.address,
+          socialProfiles: {
+            linkedin: formData.linkedin,
+          },
+        }
+
+        const response = await api.put(`/profile`, updatedData, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          toast.success("Profile updated successfully")
+          setIsEditing(false)
+          updateUser({ ...user, companyName: formData.companyName })
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to update profile")
+      } finally {
+        setLoading(false)
+      }
+    },
+    [formData, token, user, updateUser]
+  )
+
   const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     formData.companyName || "C"
   )}&background=4f46e5&color=fff&size=128`
@@ -133,12 +222,17 @@ function RecruiterProfile({ user, profileData }) {
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-2 right-2 p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg hover:scale-110 transition-transform focus:ring-4 focus:ring-indigo-100"
+                  disabled={logoLoading}
+                  className="absolute bottom-2 right-2 p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg hover:scale-110 transition-transform focus:ring-4 focus:ring-indigo-100 disabled:opacity-60"
                   title="Update Logo"
                 >
-                  <HiOutlineCamera className="w-5 h-5" />
+                  {logoLoading ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
+                  ) : (
+                    <HiOutlineCamera className="w-5 h-5" />
+                  )}
                 </button>
-                <input type="file" ref={fileInputRef} className="hidden" />
+                <input type="file" ref={fileInputRef} className="hidden" onChange={handleLogoChange} accept="image/jpeg,image/png,image/jpg" />
               </div>
 
               {/* Title Info */}
@@ -180,12 +274,14 @@ function RecruiterProfile({ user, profileData }) {
 
         {/* ── Main Content Grid ──────────────────────────────────────────────── */}
         {isEditing ? (
-          <form onSubmit={(e) => e.preventDefault()} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-8">
+          <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-8">
             <div className="flex items-center justify-between border-b border-gray-50 pb-5">
               <h2 className="text-xl font-bold text-gray-900">Edit Company Information</h2>
               <div className="flex items-center gap-3">
-                 <button onClick={handleCancel} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Cancel</button>
-                 <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">Save Changes</button>
+                 <button type="button" onClick={handleCancel} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Cancel</button>
+                 <button type="submit" disabled={loading} className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all disabled:opacity-60">
+                   {loading ? "Saving..." : "Save Changes"}
+                 </button>
               </div>
             </div>
 

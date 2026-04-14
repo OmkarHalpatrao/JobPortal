@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import { useJobDetail } from "../../hooks/useJobDetail"
+import api from "../../services/api"
 import {
   HiOutlineLocationMarker,
   HiOutlineBriefcase,
@@ -113,6 +114,8 @@ function JobDetail() {
     salary: "",
     location: "",
     jobType: "",
+    requirements: "",
+    responsibilities: "",
   })
   const [showApplyForm, setShowApplyForm] = useState(false)
 
@@ -125,7 +128,10 @@ function JobDetail() {
       salary: job.salary || "",
       location: job.location || "",
       jobType: job.jobType || "",
-    })
+      requirements: Array.isArray(job.requirements) ? job.requirements.join("\n") : (job.requirements || ""),
+      responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities.join("\n") : (job.responsibilities || "")
+     })
+    
     setEditModalOpen(true)
   }, [job])
 
@@ -173,15 +179,10 @@ function JobDetail() {
         formData.append("resume", resumeFile)
         formData.append("coverLetter", coverLetter)
 
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/applications/job/${job._id}`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${user.token}` },
-            body: formData,
-          }
-        )
-        const data = await response.json()
+        const response = await api.post(`/applications/apply/${job._id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        })
+        const data = response.data
         if (data.success) {
           toast.success("Application submitted successfully!")
           setApplicationState((prev) => ({
@@ -296,7 +297,7 @@ function JobDetail() {
             </Link>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="min-w-0">
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                     {job.title}
@@ -698,6 +699,8 @@ function JobDetail() {
                 { label: "Location", key: "location", as: "input" },
                 { label: "Salary", key: "salary", as: "input" },
                 { label: "Job Type", key: "jobType", as: "input" },
+                 { label: "Requirements (One per line)", key: "requirements", as: "textarea" },
+                { label: "Responsibilities (One per line)", key: "responsibilities", as: "textarea" },
               ].map(({ label, key, required, as: Tag }) => (
                 <div key={key}>
                   <label

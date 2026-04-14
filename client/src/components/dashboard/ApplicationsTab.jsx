@@ -12,7 +12,8 @@ import {
   HiChevronRight,
   HiOutlineArrowLeft,
   HiOutlineExternalLink,
-  HiOutlineSearch
+  HiOutlineSearch,
+  HiOutlineCloudDownload
 } from "react-icons/hi";
 
 function ApplicationsTab() {
@@ -165,7 +166,7 @@ function ApplicationsTab() {
                           <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Candidate</th>
                           <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Applied</th>
                           <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Pipeline Status</th>
-                          <th className="px-8 py-5 text-right"></th>
+                          <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Resume</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -203,7 +204,7 @@ function ApplicationsTab() {
                             </td>
                             <td className="px-8 py-6 text-right">
                               <a href={app.resume} target="_blank" className="p-2 text-gray-300 hover:text-indigo-600 transition-colors">
-                                <HiOutlineSearch className="w-5 h-5" />
+                                <HiOutlineCloudDownload className="w-5 h-5" />
                               </a>
                             </td>
                           </tr>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import { HiArrowNarrowLeft } from "react-icons/hi"
@@ -32,7 +32,7 @@ function EditJobForm() {
       try {
         setFetchLoading(true)
         console.log(`Fetching job details for job ID: ${jobId}`)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, {
+        const response = await api.get(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 
@@ -105,7 +105,7 @@ function EditJobForm() {
 
     try {
       console.log(`Updating job ${jobId} with data:`, jobData)
-      const response = await axios.put(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, jobData, {
+      const response = await api.put(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, jobData, {
         headers: { Authorization: `Bearer ${token}` },
       })
 

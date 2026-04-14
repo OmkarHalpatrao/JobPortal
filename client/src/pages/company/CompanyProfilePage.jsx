@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../services/api";
 import { toast } from "react-hot-toast";
 import { HiArrowNarrowLeft } from "react-icons/hi";
 
@@ -14,11 +14,11 @@ function CompanyProfilePage() {
   useEffect(() => {
     const fetchCompanyProfile = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/profile/company/${companyId}`);
+        const response = await api.get(`${import.meta.env.VITE_API_URL}/profile/company/${companyId}`);
         setCompany(response.data.company);
 
         // Fix: double slash in API URL removed
-        const jobsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/jobs/company/${companyId}`)
+        const jobsResponse = await api.get(`${import.meta.env.VITE_API_URL}/jobs/company/${companyId}`)
 
         setCompanyJobs(jobsResponse.data.jobs);
       } catch (error) {

@@ -1,34 +1,42 @@
-const express = require("express")
-const mongoose = require("mongoose")
-const cors = require("cors")
-const cookieParser = require("cookie-parser")
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const morgan = require("morgan");
-// const redis = require("redis");
-// const client = redis.createClient();
+const helmet = require("helmet");
 
-// client.connect();
+require("dotenv").config();
 
+const app = express();
 
-
-
-require("dotenv").config()
-
-const app = express()
 const allowedOrigins = [
-  process.env.CLIENT_URL,               
+  process.env.CLIENT_URL,
   "http://localhost:5173",
   "http://localhost:5000",
-  "http://localhost:4173",               
-]
+  "http://localhost:4173",
+];
 
-// Middleware
-app.use(express.json())
-app.use(cookieParser())
-app.use(morgan('dev'))
+// Core Middleware
+app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
+app.use(morgan("dev"));
 
-// Swagger docs route
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+
+// Swagger
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -39,50 +47,54 @@ app.use(
   })
 );
 
+// Routes
+const authRoutes = require("./routes/auth");
+const jobRoutes = require("./routes/job");
+const applicationRoutes = require("./routes/application");
+const profileRoutes = require("./routes/profile");
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true)
-      } else {
-        return callback(new Error("Not allowed by CORS"))
-      }
-    },
-    credentials: true,
-  })
-)
+const {
+  generateCsrfToken,
+  doubleCsrfProtection,
+} = require("./middleware/csrf");
 
-// Import routes
-const authRoutes = require("./routes/auth")
-const jobRoutes = require("./routes/job")
-const applicationRoutes = require("./routes/application")
-const profileRoutes = require("./routes/profile")
+// Health
+app.get("/health", (req, res) => {
+  res.send("OK");
+});
 
+// Public CSRF route
+app.get("/api/v1/csrf-token", (req, res) => {
+  const token = generateCsrfToken(req, res);
+  res.status(200).json({ success: true, csrfToken: token });
+});
 
-// Mount routes
-app.use("/api/v1/auth", authRoutes)
-app.use("/api/v1/jobs", jobRoutes)
-app.use("/api/v1/applications", applicationRoutes)
-app.use("/api/v1/profile", profileRoutes)
+// Public Auth routes
+app.use("/api/v1/auth", authRoutes);
 
+// Protected routes
+app.use(doubleCsrfProtection);
 
-// Connect to database
+app.use("/api/v1/jobs", jobRoutes);
+app.use("/api/v1/applications", applicationRoutes);
+app.use("/api/v1/profile", profileRoutes);
+
+// Error Handler
+const { errorHandler } = require("./middleware/errorHandler");
+app.use(errorHandler);
+
+// DB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.log("MongoDB connection error:", err))
-app.get('/health', (req, res) => {
-  res.send('OK');
-});
+  .catch((err) => console.log("MongoDB connection error:", err));
 
-// Start server
-const PORT = process.env.PORT || 4000
+// Start Server
+const PORT = process.env.PORT || 4000;
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-  // console.log(`API Docs available at http://localhost:${PORT}/api-docs`);
-})
-
+  console.log(`Server is running on port ${PORT}`);
+});

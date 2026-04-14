@@ -116,7 +116,15 @@ useEffect(() => {
   const handleEditJob = async (updatedData) => {
     if (!isAuthenticated || user?.accountType !== "Recruiter" || !jobState.job) return
     try {
-      await updateJob(jobState.job._id, updatedData, token)
+      const payload = { ...updatedData }
+      if (typeof payload.requirements === 'string') {
+        payload.requirements = payload.requirements.split('\n').map(s => s.trim()).filter(Boolean)
+      }
+      if (typeof payload.responsibilities === 'string') {
+        payload.responsibilities = payload.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
+      }
+      
+      await updateJob(jobState.job._id, payload, token)
       await fetchJobDetails() // refresh job data after editing
     } catch (error) {
       console.error("Failed to update job:", error)

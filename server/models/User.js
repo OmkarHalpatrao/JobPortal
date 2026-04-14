@@ -48,7 +48,7 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Profile",
   },
-  token: {
+  refreshToken: {
     type: String,
   },
   createdAt: {

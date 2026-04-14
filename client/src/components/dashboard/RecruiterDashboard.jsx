@@ -40,18 +40,7 @@ function RecruiterDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 pb-20 animate-in fade-in duration-700">
       
-      {/* ── Top Navigation ── */}
-      <div className="mb-6">
-        <button
-          onClick={() => navigate("/")}
-          className="group flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-indigo-600 transition-colors"
-        >
-          <div className="p-2 rounded-xl group-hover:bg-indigo-50 transition-colors">
-            <HiOutlineArrowLeft className="w-5 h-5" />
-          </div>
-          Back to Portal
-        </button>
-      </div>
+     
 
       {/* ── Header Section ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">

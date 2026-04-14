@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import OtpInput from "react-otp-input"
 import { HiOutlineArrowLeft, HiOutlineMailOpen, HiOutlineRefresh } from "react-icons/hi"
@@ -36,7 +36,7 @@ function VerifyEmail() {
 
     setLoading(true)
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signup`, {
+      const response = await api.post(`${import.meta.env.VITE_API_URL}/auth/signup`, {
         ...signupData,
         otp,
       })
@@ -58,7 +58,7 @@ function VerifyEmail() {
 
     const toastId = toast.loading("Sending new code...")
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/send-otp`, {
+      const response = await api.post(`${import.meta.env.VITE_API_URL}/auth/send-otp`, {
         email: signupData.email,
       })
 

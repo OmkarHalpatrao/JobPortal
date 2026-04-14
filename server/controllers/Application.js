@@ -15,7 +15,7 @@ exports.applyForJob = async (req, res) => {
     const { coverLetter } = req.body
 
     // Resume URL from Cloudinary (uploaded via multer middleware)
-    const resumeUrl = req.file ? req.file.path : null
+    const resumeUrl = req.file ? req.file.secure_url || req.file.path : null
 
     if (!resumeUrl) {
       return res.status(400).json({

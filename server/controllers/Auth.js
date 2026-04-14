@@ -99,7 +99,7 @@ exports.signup = async (req, res) => {
 
     //Redis
     // const recentOtp = await redis.get(`otp:${email}`);
-    
+
     if (recentOtp.length === 0) {
       return res.status(400).json({
         success: false,
@@ -169,7 +169,7 @@ exports.signup = async (req, res) => {
 
 // Login Controller
 exports.login = async (req, res) => {
-  
+
   try {
     const { email, password } = req.body
 
@@ -192,29 +192,42 @@ exports.login = async (req, res) => {
 
     // Compare password
     if (await bcrypt.compare(password, user.password)) {
-      // Create JWT token
-      const token = jwt.sign(
+      // Create Access Token
+      const accessToken = jwt.sign(
         { email: user.email, id: user._id, accountType: user.accountType },
         process.env.JWT_SECRET,
         {
-          expiresIn: "24h",
+          expiresIn: "15m",
         },
       )
 
-      // Update user with token
-      user.token = token
+      // Create Refresh Token
+      const refreshToken = jwt.sign(
+        { email: user.email, id: user._id, accountType: user.accountType },
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+        {
+          expiresIn: "7d",
+        },
+      )
+
+      // Update user with refresh token
+      await User.findByIdAndUpdate(user._id, { refreshToken });
+
       user.password = undefined
+      user.refreshToken = undefined
 
       // Set cookie options
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict"
       }
 
       // Return success response with cookie
-      return res.cookie("token", token, options).status(200).json({
+      return res.cookie("refreshToken", refreshToken, options).status(200).json({
         success: true,
-        token,
+        accessToken,
         user,
         message: "Logged in successfully",
       })
@@ -233,4 +246,74 @@ exports.login = async (req, res) => {
     })
   }
 }
+
+// Refresh Session Controller
+exports.refresh = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ success: false, message: "Refresh token not found" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).populate("additionalDetails");
+
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ success: false, message: "Invalid refresh token" });
+    }
+
+    // Generate new Access Token
+    const newAccessToken = jwt.sign(
+      { email: user.email, id: user._id, accountType: user.accountType },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    user.password = undefined;
+    user.refreshToken = undefined;
+
+    return res.status(200).json({
+      success: true,
+      accessToken: newAccessToken,
+      user
+    });
+
+  } catch (error) {
+    console.error("[Auth] Error in refresh:", error);
+    return res.status(401).json({ success: false, message: "Session expired, please login again" });
+  }
+}
+
+// Logout Controller
+exports.logout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      const decoded = jwt.decode(refreshToken);
+      if (decoded && decoded.id) {
+        await User.findByIdAndUpdate(decoded.id, { refreshToken: null });
+      }
+    }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict"
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully"
+    });
+  } catch (error) {
+    console.error("[Auth] Error in logout:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed"
+    });
+  }
+}
+
 

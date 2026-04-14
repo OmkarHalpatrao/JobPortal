@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import JobSeekerProfile from "./JobSeekerProfile"
@@ -22,7 +22,7 @@ function ProfilePage() {
 
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/profile`, {
+        const response = await api.get(`${import.meta.env.VITE_API_URL}/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 

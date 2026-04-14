@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { 
   HiOutlineUser, 
@@ -49,7 +49,7 @@ function SignupForm() {
     }
     setLoading(true)
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/send-otp`, { email })
+      const response = await api.post(`${import.meta.env.VITE_API_URL}/auth/send-otp`, { email })
       if (response.data.success) {
         localStorage.setItem("signupData", JSON.stringify({ ...formData, accountType }))
         toast.success("OTP sent! Please verify your email.")

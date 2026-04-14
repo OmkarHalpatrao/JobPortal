@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import axios from "axios"
+import api from "../../services/api"
 import { Link } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
@@ -17,12 +17,6 @@ import {
 } from "react-icons/hi"
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-const getEmbedSafeUrl = (url) => {
-  if (!url) return null;
-  const safeUrl = url.replace("http://", "https://");
-  return `https://docs.google.com/viewer?url=${encodeURIComponent(safeUrl)}&embedded=true`;
-};
 
 const getDownloadUrl = (url) => {
   if (!url || !url.includes("cloudinary.com")) return url;
@@ -47,14 +41,12 @@ function JobApplications({ jobId, onBack }) {
   const [applications, setApplications] = useState([])
   const [jobDetails, setJobDetails] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [previewUrl, setPreviewUrl] = useState(null)
-  const [iframeLoading, setIframeLoading] = useState(true)
 
   useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true)
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/dashboard/applications/${jobId}/`, {
+        const res = await api.get(`${import.meta.env.VITE_API_URL}/dashboard/applications/${jobId}/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         setApplications(res.data.applications)
@@ -70,14 +62,11 @@ function JobApplications({ jobId, onBack }) {
     if (jobId) fetchApplications()
   }, [jobId, token])
 
-  useEffect(() => {
-    document.body.style.overflow = previewUrl ? 'hidden' : 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [previewUrl]);
+  // Optional overflow control if needed later
 
   const handleStatusChange = async (applicationId, newStatus) => {
     try {
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/applications/${applicationId}`, 
+      const res = await api.put(`${import.meta.env.VITE_API_URL}/applications/${applicationId}`, 
         { status: newStatus }, 
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -124,7 +113,7 @@ function JobApplications({ jobId, onBack }) {
                 <thead>
                   <tr className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] bg-gray-50/50">
                     <th className="px-8 py-4">Candidate</th>
-                    <th className="px-8 py-4">Documents</th>
+                    <th className="px-8 py-4">view Resume</th>
                     <th className="px-8 py-4">Date</th>
                     <th className="px-8 py-4 text-right">Status</th>
                   </tr>
@@ -146,23 +135,14 @@ function JobApplications({ jobId, onBack }) {
                         </div>
                       </td>
                       <td className="px-8 py-6">
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => { setPreviewUrl(app.resume); setIframeLoading(true); }}
-                            className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-all"
-                          >
-                            <HiOutlineSearch className="w-4 h-4" /> Preview
-                          </button>
-                          {/* Force Download Link */}
-                          <a 
-                            href={getDownloadUrl(app.resume)} 
-                            download 
-                            className="p-1.5 text-gray-300 hover:text-emerald-600 transition-colors"
-                            title="Download Resume"
-                          >
-                             <HiOutlineDownload className="w-5 h-5" />
-                          </a>
-                        </div>
+                        <a 
+                          href={getDownloadUrl(app.resume)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center w-fit gap-1.5 text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-all"
+                        >
+                          <HiOutlineCloudDownload className="w-4 h-4" /> Download
+                        </a>
                       </td>
                       <td className="px-8 py-6 text-sm font-bold text-gray-500">
                         {format(new Date(app.appliedDate), "MMM dd")}
@@ -210,12 +190,14 @@ function JobApplications({ jobId, onBack }) {
                       <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-0.5">Applied</span>
                       <p className="text-xs font-bold text-gray-600">{format(new Date(app.appliedDate), "MMM dd")}</p>
                     </div>
-                    <button 
-                      onClick={() => { setPreviewUrl(app.resume); setIframeLoading(true); }}
-                      className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600"
+                    <a 
+                      href={getDownloadUrl(app.resume)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-all"
                     >
-                      <HiOutlineSearch className="w-4 h-4" /> Preview
-                    </button>
+                      <HiOutlineCloudDownload className="w-4 h-4" /> Download
+                    </a>
                   </div>
 
                   <select
@@ -234,61 +216,6 @@ function JobApplications({ jobId, onBack }) {
         )}
       </div>
 
-      {/* ── Preview Modal with Download Integration ── */}
-      {previewUrl && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-gray-900/90 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={() => setPreviewUrl(null)}
-        >
-          <div 
-            className="bg-white w-full max-w-6xl h-full rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-300 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                  <HiOutlineSearch className="w-5 h-5" />
-                </div>
-                <h3 className="font-black text-gray-900 uppercase tracking-tight text-xs">Document Preview</h3>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {/* Download in Modal Header */}
-                <a 
-                  href={getDownloadUrl(previewUrl)} 
-                  download 
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                >
-                  <HiOutlineDownload className="w-4 h-4" /> Save PDF
-                </a>
-                <button 
-                  onClick={() => setPreviewUrl(null)} 
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
-                >
-                  <HiOutlineX className="w-6 h-6 text-gray-400 group-hover:text-gray-900" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 bg-gray-100 relative">
-              {iframeLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-0">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-600 border-solid border-r-transparent mb-4"></div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Preparing Document...</p>
-                </div>
-              )}
-              
-              <iframe 
-                src={getEmbedSafeUrl(previewUrl)} 
-                className={`w-full h-full border-none bg-white transition-opacity duration-700 ${iframeLoading ? 'opacity-0' : 'opacity-100'}`}
-                title="Resume Preview"
-                onLoad={() => setIframeLoading(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -14,9 +14,10 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "job-portal",
-    allowed_formats: ["jpg", "jpeg", "png", "pdf"],
-    resource_type: "auto",
+    folder: "job-portal/resumes",
+    allowed_formats: ["pdf"],
+    resource_type: "raw", // Highly recommended for documents
+    format: "pdf", // Explicitly forces the .pdf extension
   },
 })
 

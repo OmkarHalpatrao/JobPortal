@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import api from "../../services/api"
 import { toast } from "react-hot-toast"
 import { useAuth } from "../../context/AuthContext"
 import { 
@@ -37,12 +37,10 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, formData, {
-        withCredentials: true,
-      })
+      const response = await api.post(`/auth/login`, formData)
 
       if (response.data.success) {
-        login(response.data.user, response.data.token)
+        login(response.data.user, response.data.accessToken)
         toast.success("Welcome back!")
         if (response.data.user.accountType === "JobSeeker") {
           navigate("/dashboard/jobseeker")

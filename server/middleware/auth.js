@@ -5,11 +5,11 @@ require("dotenv").config()
 exports.auth = async (req, res, next) => {
   try {
     
-    // Get token from cookies or authorization header
-    const token = req.cookies.token || req.header("Authorization")?.replace("Bearer ", "")
+    // Get token from authorization header ONLY
+    const token = req.header("Authorization")?.replace("Bearer ", "");
 
     // If token is missing
-    if (!token) {
+    if (!token || token === "null" || token === "undefined") {
       return res.status(401).json({
         success: false,
         message: "Authentication failed: Token missing",

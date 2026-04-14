@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link,useNavigate } from "react-router-dom"
 import { formatDistance } from "date-fns"
 import { useAuth } from "../../context/AuthContext"
 import { toast } from "react-hot-toast"
 
 function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMode = false }) {
   const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
   const [localIsSaved, setLocalIsSaved] = useState(propIsSaved)
 
   useEffect(() => {
@@ -26,7 +27,10 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMod
   const companyLogo = recruiterInfo.companyLogo || "https://via.placeholder.com/150?text=Company"
 
   return (
-    <div className="bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
+     <div 
+      onClick={() => navigate(`/jobs/${job._id}`)}
+      className="cursor-pointer bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full"
+    >
       <div className="relative p-5 flex flex-col justify-between h-full">
         {/* Posted label */}
         <div className="absolute top-3 right-4 text-xs text-gray-400 font-medium">
@@ -53,7 +57,7 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMod
             {job.company && (
               <div className="text-sm text-blue-700 mt-1 truncate">
                 {companyId ? (
-                  <Link to={`/company/${companyId}`} className="hover:underline">
+                  <Link to={`/company/${companyId}`} onClick={(e)=> e.stopPropagation()} className="hover:underline relative z-10">
                     {job.company}
                   </Link>
                 ) : (
@@ -100,7 +104,7 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMod
               {!savedMode && !localIsSaved && (
                 <button
                   onClick={handleToggleSaveJob}
-                  className="text-xs font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95"
+                  className="text-xs font-semibold text-white bg-gradient-to-r z-10 relative from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95"
                 >
                   Save Job
                 </button>
@@ -108,7 +112,7 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMod
               {savedMode && (
                 <button
                   onClick={handleToggleSaveJob}
-                  className="text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95"
+                  className="text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 z-10 relative px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95"
                 >
                   Remove
                 </button>
@@ -117,6 +121,7 @@ function JobCard({ job, isApplied, isSaved: propIsSaved, toggleSaveJob, savedMod
           )}
           <Link
             to={`/jobs/${job._id}`}
+            onClick={(e)=> e.stopPropagation()}
             className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-all active:scale-95"
           >
             View Details
